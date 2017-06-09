@@ -21,5 +21,25 @@ app.config(function($interpolateProvider, $routeProvider){
 				controller: 'AuthController',
 				templateUrl: 'RecognitionClient/auth/login.html'
 			})
+			.when('/logout', {
+				controller: 'AuthController',
+				templateUrl: 'RecognitionClient/auth/login.html'
+			})
+			.when('/About', {
+				controller: 'AboutController',
+				templateUrl: 'RecognitionClient/info/about.html'
+			})
+			.when('/Algorithms', {
+				controller: 'AlgorithmsController',
+				templateUrl: 'RecognitionClient/info/algorithms.html'
+			})
+			.when('/Try_It', {
+				controller: 'TryItController',
+				templateUrl: 'RecognitionClient/app/tryit.html'
+			})
+			.when('/My_Saved', {
+				controller: 'MySavedController',
+				templateUrl: 'RecognitionClient/storage/mysaved.html'
+			})
 			.otherwise('/home');
 });
