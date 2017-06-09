@@ -23,7 +23,7 @@ app.config(function($interpolateProvider, $routeProvider){
 			})
 			.when('/logout', {
 				controller: 'AuthController',
-				templateUrl: 'RecognitionClient/auth/login.html'
+				templateUrl: 'RecognitionClient/auth/logout.html'
 			})
 			.when('/About', {
 				controller: 'AboutController',

@@ -54,7 +54,7 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
       );
   };
 
-  $timeout($scope.login(), 500);  
+  // $timeout($scope.login(), 500);  
 
 
 });
