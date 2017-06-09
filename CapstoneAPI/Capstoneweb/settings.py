@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'Recognition.apps.RecognitionConfig',
 ]
 
 MIDDLEWARE = [
@@ -49,7 +53,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Capstone.urls'
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+    '127.0.0.1:8080'
+)
+
+ROOT_URLCONF = 'Capstoneweb.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Capstone.wsgi.application'
+WSGI_APPLICATION = 'Capstoneweb.wsgi.application'
 
 
 # Database
