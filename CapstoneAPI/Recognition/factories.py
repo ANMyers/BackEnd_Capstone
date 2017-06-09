@@ -1,5 +1,5 @@
 import factory
-from Recognition.models.models import *
+from Recognition.models import *
 from django.contrib.auth.models import User
 
 class UserFactory(factory.django.DjangoModelFactory):
