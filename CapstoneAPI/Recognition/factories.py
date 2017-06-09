@@ -1,6 +1,6 @@
 import factory
 from Recognition.models import *
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Project, ProjectDataset
 
 class UserFactory(factory.django.DjangoModelFactory):
     """
@@ -34,3 +34,41 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_superuser = 0
     is_staff = 0
     is_active = 1
+
+class ProjectFactory(factory.django.DjangoModelFactory):
+    """
+    This class creates fake data for the User table in the database.
+
+    ----Fields----
+    name: factory.Faker('first_name'): fake name of the project
+    algorithm: (string) : 'KNN' representing kmeans algorithm
+    user: factory.SubFactory('Recognition.factories.UserFactory'): builds the user for this specific project
+
+    Author:
+        Adam Myers
+    """
+
+    class Meta:
+        model = Project
+    name = factory.Faker('bs')
+    algorithm = 'KNN'
+    user = factory.Iterator(User.objects.all())
+
+class ProjectDatasetFactory(factory.django.DjangoModelFactory):
+    """
+    This class creates fake data for the User table in the database.
+
+    ----Fields----
+    name: factory.Faker('first_name'): fake name of the project
+    name: (string) : 'KNN' representing kmeans algorithm
+    user: factory.SubFactory('Recognition.factories.UserFactory'): builds the user for this specific project
+
+    Author:
+        Adam Myers
+    """
+
+    class Meta:
+        model = ProjectDataset
+    dataset = [factory.Faker('random_number'),factory.Faker('random_number'),factory.Faker('random_number'),factory.Faker('random_number')]
+    user = factory.Iterator(User.objects.all())
+    project = factory.Iterator(Project.objects.all())
