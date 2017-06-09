@@ -1,5 +1,11 @@
 .DS_STORE
-Capstone/.DS_STORE
+CapstoneAPI/.DS_STORE
+CapstoneAPI/db.sqlite3
+CapstoneAPI/Recognition/migrations
+CapstoneClient/.DS_STORE
+CapstoneClient/lib/node_modules
+CapstoneClient/RecognitionClient/products
+
 
 
 # Byte-compiled / optimized / DLL files
