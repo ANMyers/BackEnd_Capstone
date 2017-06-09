@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Recognition</title>
+		<link rel="stylesheet" type="text/css" href="lib/node_modules/bootstrap/dist/css/bootstrap.min.css" />
+	</head>
+	<body>
+		<div ng-app='Recognition'>
+		<div ng-include="'./Recognition/nav/NavBar.html'" ng-controller="NavbarController"></div><br><br><br>
+			<div ng-view></div>
+		</div>
+
+		<script src='lib/node_modules/angular/angular.min.js'></script>
+		<script src='lib/node_modules/angular-route/angular-route.min.js'></script>
+
+
+		<script src='./Recognition/app.js'></script>
+
+		<script src='./Recognition/auth/AuthCtrl.js'></script>
+		<script src='./Recognition/nav/NavCtrl.js'></script>
+
+
+		<script src='./Recognition/splash/HomeCtrl.js'></script>
+	</body>
+</html>
