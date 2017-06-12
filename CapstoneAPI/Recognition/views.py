@@ -68,9 +68,28 @@ def validate_compatibilty(request):
 
     """
     req_body = json.loads(request.body.decode())
-    print("\n\n\n{}\n\n".format(req_body))
+    list_of_data = req_body['dataset'].split('\n')
 
-    data = json.dumps({"data":"she worked"})
+    reformated_list = list()
+    list_of_index = set()
+
+    for dataset in list_of_data:
+        new_list = dataset.split(',')
+        append = True
+        for index, value in enumerate(new_list):
+            try:
+                new_list[index] = float(value)
+            except ValueError:
+                if len(value) == 0:
+                    append = False
+                else:
+                    list_of_index.add(index)
+        if append:
+            reformated_list.append(new_list)
+
+    sample_set = reformated_list[0]
+    list_of_index = list(list_of_index)
+    data = json.dumps({"sample_set":sample_set, "indexs": list_of_index})
     return HttpResponse(data, content_type='application/json')
-    pass
+
 

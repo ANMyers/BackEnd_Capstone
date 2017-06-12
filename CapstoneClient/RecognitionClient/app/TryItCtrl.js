@@ -30,8 +30,6 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     r.onloadend = function(e){
       $scope.dataset = e.target.result;
       if ($scope.SelectedAlgo) {
-      console.log("Algoritm: ", $scope.SelectedAlgo);
-      console.log("data: ", $scope.dataset);
       $scope.validate_compatibilty();
       } else {
         console.log("Please Choose an Algorithm.");
