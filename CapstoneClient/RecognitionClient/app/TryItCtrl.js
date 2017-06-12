@@ -6,7 +6,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
 
   $scope.validate_compatibilty = function() {
     $http({
-    url: `${apiUrl}/validate_compatibilty`,
+    url: `${apiUrl}/validate_compatibilty/`,
     method: "POST",
     headers: {
       'Authorization': "Token " + RootFactory.getToken()
@@ -24,18 +24,24 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     });
   };
 
-  $scope.test = function() {
-    if ($scope.SelectedAlgo && $scope.dataset) {
-    console.log("Algoritm: ", $scope.SelectedAlgo);
-    console.log("dataset: ", $scope.dataset);
-    $scope.validate_compatibilty();
+  $scope.test = function(){
+    var f = document.getElementById('dataset').files[0],
+        r = new FileReader();
+    r.onloadend = function(e){
+      $scope.dataset = e.target.result;
+      if ($scope.SelectedAlgo) {
+      console.log("Algoritm: ", $scope.SelectedAlgo);
+      console.log("data: ", $scope.dataset);
+      $scope.validate_compatibilty();
+      } else {
+        console.log("Please Choose an Algorithm.");
+      }
+    };
+    if (f) {
+      r.readAsBinaryString(f);
     } else {
-      console.log("Please Choose an Algorithm and a dataset.");
+        console.log("Please Upload a Dataset.");
     }
-  };
-
-  $scope.onFileSelect = function(file) {
-    $scope.dataset = file;
   };
 
 });

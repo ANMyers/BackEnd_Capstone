@@ -1,5 +1,5 @@
 "use strict";
-var app = angular.module('Recognition', ['ngRoute', 'ngFileUpload']);
+var app = angular.module('Recognition', ['ngRoute']);
 
 app.constant('apiUrl', "http://localhost:8000");
 

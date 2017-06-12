@@ -52,6 +52,7 @@ def kmeans(request):
     """
     pass
 
+@csrf_exempt
 def validate_compatibilty(request):
     """
     This function allows user to upload there dataset against there choosen algorithm and outputs one dataset for the user to choose which value to ignore.
@@ -66,6 +67,10 @@ def validate_compatibilty(request):
         Adam Myers
 
     """
-    print("\n\n\nrequest.POST: {}\n\n".format(request.POST))
+    req_body = json.loads(request.body.decode())
+    print("\n\n\n{}\n\n".format(req_body))
+
+    data = json.dumps({"data":"she worked"})
+    return HttpResponse(data, content_type='application/json')
     pass
 
