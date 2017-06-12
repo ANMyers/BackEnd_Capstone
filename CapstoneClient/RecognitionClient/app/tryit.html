@@ -3,4 +3,14 @@
     <div class="row">
         <p>Try it page that is the meat of this project, good luck sir.</p>
     </div>
+    <div class="row">
+        <label>Select Your Algorithm: <select ng-model="SelectedAlgo" ng-options="algo for algo in algorithms">
+        </select></label>
+        <br><br>
+        <a target="_blank" href="https://archive.ics.uci.edu/ml/datasets.html">Click Me to see a list of datasets</a>
+        <br>
+        <label>Upload Your Dataset: <input type="file" ngf-select="onFileSelect($files)"></label>
+        <br><br>
+        <button class="btn btn-primary" type="submit" ng-click="test()">Continue</button>
+    </div>
 </div>

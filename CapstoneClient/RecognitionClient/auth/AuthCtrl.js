@@ -28,7 +28,7 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
         res => {
           RootFactory.setToken(res.data.token);
           if (res.data.token !== "") {
-            $location.path('/products');
+            $location.path('/home');
           }
         },
         console.error
@@ -47,7 +47,7 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
         res => {
           RootFactory.setToken(res.data.token);
           if (res.data.token !== "") {
-            $location.path('/products');
+            $location.path('/home');
           }
         },
         console.error

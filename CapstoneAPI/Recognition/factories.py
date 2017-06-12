@@ -1,6 +1,7 @@
 import factory
-from Recognition.models import *
-from django.contrib.auth.models import User, Project, ProjectDataset
+from Recognition.models import Project, ProjectDataset
+from django.contrib.auth.models import User
+from random import randint
 
 class UserFactory(factory.django.DjangoModelFactory):
     """
@@ -54,6 +55,13 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     algorithm = 'KNN'
     user = factory.Iterator(User.objects.all())
 
+def list_of_random_integers(length):
+    new_list = list()
+    for each in range(0, length):
+        rand_int = randint(50, 200)
+        new_list.append(rand_int)
+    return new_list
+
 class ProjectDatasetFactory(factory.django.DjangoModelFactory):
     """
     This class creates fake data for the User table in the database.
@@ -69,6 +77,6 @@ class ProjectDatasetFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ProjectDataset
-    dataset = [factory.Faker('random_number'),factory.Faker('random_number'),factory.Faker('random_number'),factory.Faker('random_number')]
+    dataset = list_of_random_integers(4)
     user = factory.Iterator(User.objects.all())
     project = factory.Iterator(Project.objects.all())
