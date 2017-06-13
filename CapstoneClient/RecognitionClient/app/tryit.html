@@ -1,9 +1,9 @@
 <div class="container">
-    <h1>Try It!</h1>
-    <div class="row">
-        <p>Try it page that is the meat of this project, good luck sir.</p>
+    <div class="row alert alert-danger" ng-show="error">
+        <p ng-model="error">((error_message))</p>
     </div>
-    <div class="row">
+    <div class="row" ng-show="step1">
+        <h1>Try It!</h1>
         <label>Select Your Algorithm: <select ng-model="SelectedAlgo" ng-options="algo for algo in algorithms">
         </select></label>
         <br><br>
@@ -11,7 +11,42 @@
         <br>
         <label>Upload Your Dataset: </label><input type="file" id="dataset" name="dataset">
         <br><br>
-        <button class="btn btn-primary" type="submit" ng-click="test()">Continue</button>
+        <button class="btn btn-primary" type="submit" ng-click="step_1()">Continue</button>
     </div>
-    <br><br><br><br>
+
+    <div class="row" ng-show="step2">
+      <h1>Next Step</h1>
+      <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
+
+      <div class="col-sm-6">
+      <p><strong>One Set of Your Data:</strong></p>
+        <table>
+          <tr ng-repeat="sample in sample_set">
+            <td>(( sample ))</td>
+          </tr>
+        </table><br>
+      </div>
+
+      <p><strong>Variables to name: </strong></p>
+
+      <div class="col-sm-6">
+        <div ng-repeat="vars in variables">
+          <p>Index of: ((vars[0]))  Value of: ((vars[1]))</p>
+          <input type="text" name="((vars))" />
+        </div>
+      <button class="btn btn-primary" type="submit" ng-click="rename_values()">Rename Values</button>
+      </div><br><br>
+
+      <p><strong>Variables You want to Exclude: </strong></p>
+
+      <div class="col-sm-6">
+        <div id="exlude_set">
+          <select class="selectpicker" multiple>
+            <option ng-repeat="sample in sample_set">((sample))</option>
+          </select>
+        </div>
+      <button class="btn btn-primary" type="submit" ng-click="variables_to_exclude()">Exclude Variable</button>
+      </div>
+
+    </div>
 </div>
