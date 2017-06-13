@@ -53,7 +53,7 @@ def kmeans(request):
     pass
 
 @csrf_exempt
-def validate_compatibilty(request):
+def format_dataset(request):
     """
     This function allows user to upload there dataset against there choosen algorithm and outputs one dataset for the user to choose which value to ignore.
 
@@ -69,9 +69,10 @@ def validate_compatibilty(request):
     """
     req_body = json.loads(request.body.decode())
     list_of_data = req_body['dataset'].split('\n')
+    algorithm = req_body['algorithm']
 
     reformated_list = list()
-    list_of_index = set()
+    dicts_of_ignored_values = set()
 
     for dataset in list_of_data:
         new_list = dataset.split(',')
@@ -83,13 +84,15 @@ def validate_compatibilty(request):
                 if len(value) == 0:
                     append = False
                 else:
-                    list_of_index.add(index)
+                    new_tuple = (index, value)
+                    dicts_of_ignored_values.add(new_tuple)
+
         if append:
             reformated_list.append(new_list)
 
     sample_set = reformated_list[0]
-    list_of_index = list(list_of_index)
-    data = json.dumps({"sample_set":sample_set, "indexs": list_of_index})
+    dicts_of_ignored_values = list(dicts_of_ignored_values)
+    data = json.dumps({"sample_set":sample_set, "indexs": dicts_of_ignored_values})
     return HttpResponse(data, content_type='application/json')
 
 

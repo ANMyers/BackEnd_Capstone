@@ -4,9 +4,9 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
 
   $scope.algorithms = ['Nearest Neighbor', 'Test'];
 
-  $scope.validate_compatibilty = function() {
+  let validate_compatibilty = function() {
     $http({
-    url: `${apiUrl}/validate_compatibilty/`,
+    url: `${apiUrl}/format_dataset/`,
     method: "POST",
     headers: {
       'Authorization': "Token " + RootFactory.getToken()
@@ -30,14 +30,16 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     r.onloadend = function(e){
       $scope.dataset = e.target.result;
       if ($scope.SelectedAlgo) {
-      $scope.validate_compatibilty();
+      validate_compatibilty();
       } else {
+        // This needs to update the html page (through binding) to show the user what they must do
         console.log("Please Choose an Algorithm.");
       }
     };
     if (f) {
       r.readAsBinaryString(f);
     } else {
+        // This needs to update the html page (through binding) to show the user what they must do
         console.log("Please Upload a Dataset.");
     }
   };
