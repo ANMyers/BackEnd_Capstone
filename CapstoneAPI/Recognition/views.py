@@ -78,6 +78,8 @@ def format_dataset(request):
     reformated_list = list()
     dicts_of_ignored_values = set()
 
+    dataset_quantity = 0
+
     for dataset in list_of_data:
         new_list = dataset.split(',')
         append = True
@@ -92,6 +94,7 @@ def format_dataset(request):
                     dicts_of_ignored_values.add(new_tuple)
 
         if append:
+            dataset_quantity = dataset_quantity + 1
             reformated_list.append(new_list)
 
     sample_set = reformated_list[0]
@@ -108,7 +111,7 @@ def format_dataset(request):
     go_on = True
 
     dicts_of_ignored_values = list(dicts_of_ignored_values)
-    data = json.dumps({"sample_set":sample_set, "indexs": dicts_of_ignored_values, "continue": go_on})
+    data = json.dumps({"sample_set":sample_set, "indexs": dicts_of_ignored_values, "continue": go_on, "amount": dataset_quantity})
     return HttpResponse(data, content_type='application/json')
 
 def percentage_of_numbers(sample):
