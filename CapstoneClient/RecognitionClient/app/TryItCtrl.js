@@ -13,25 +13,26 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
 
   let renamed_variables = [];
 
-  // let run_kmeans = function() {
-  //     $http({
-  //     url: `${apiUrl}/kmeans/`,
-  //     method: "POST",
-  //     headers: {
-  //       'Authorization': "Token " + RootFactory.getToken()
-  //     },
-  //     data: {
-  //       "algorithm": $scope.SelectedAlgo,
-  //       "dataset": $scope.dataset
-  //     }
-  //   }).then(
-  //     res => {
-  //       console.log("Data: ", res.data);
-  //     },
-  //     err => {
-  //       console.log("Error: ", err);
-  //     });
-  //   };
+  let run_kmeans = function() {
+      $http({
+      url: `${apiUrl}/kmeans/`,
+      method: "POST",
+      headers: {
+        'Authorization': "Token " + RootFactory.getToken()
+      },
+      data: {
+        "algorithm": $scope.SelectedAlgo,
+        "ignored": $scope.excludes,
+        "renamed": renamed_variables
+      }
+    }).then(
+      res => {
+        console.log("Data: ", res.data);
+      },
+      err => {
+        console.log("Error: ", err);
+      });
+  };
 
   let format_dataset = function() {
     $http({
@@ -65,7 +66,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     });
   };
 
-  $scope.step_1 = function(){
+  $scope.step_2 = function(){
     var f = document.getElementById('dataset').files[0],
         r = new FileReader();
     r.onloadend = function(e){
@@ -85,7 +86,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     }
   };
 
-  $scope.step_2 = function() {
+  $scope.step_3 = function() {
     $scope.save_training();
     if ($scope.train_values_set === false) {
       $scope.error = true;
@@ -95,6 +96,9 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
       $scope.error_message = "Please Rename all variables listed on the right and remember to exclude any variables you don't need.";
     } else {
       $scope.error = false;
+      if ($scope.SelectedAlgo == 'Nearest Neighbor') {
+        run_kmeans();
+      }
     }
   };
 
@@ -166,7 +170,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
       $scope.train_values_set = false; 
     } else if ($scope.train_against > $scope.amount - $scope.train_on) {
       $scope.train = true;
-      $scope.train_message = `Quantity to against Must be lower than total quantity (${$scope.amount}) minus quantity to train against (${$scope.train_on}) ( hint: lower than ${$scope.amount - $scope.train_on} )`;
+      $scope.train_message = `Quantity to train against Must be lower than total quantity (${$scope.amount}) minus quantity to train on (${$scope.train_on}) ( hint: lower than ${$scope.amount - $scope.train_on} )`;
       $scope.train_values_set = false;
     } else {
       $scope.train = false;

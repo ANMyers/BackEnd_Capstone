@@ -37,6 +37,7 @@ def register_user(request):
     data = json.dumps({"token":token.key})
     return HttpResponse(data, content_type='application/json')
 
+@csrf_exempt
 def kmeans(request):
     """
     This function allows user to run kmeans alogrithm on their dataset.
@@ -51,7 +52,12 @@ def kmeans(request):
         Adam Myers
 
     """
-    pass
+    req_body = json.loads(request.body.decode())
+
+    print("\n\n\n---->>>{}\n\n".format(req_body))
+
+    data = json.dumps({"results":"We're almost there."})
+    return HttpResponse(data, content_type='application/json')
 
 @csrf_exempt
 def format_dataset(request):
