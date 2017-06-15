@@ -217,3 +217,20 @@ def percentage_of_numbers(sample):
             total = total + 1
 
     return numbers / total
+
+@csrf_exempt
+def my_saved(request):
+
+    req_body = json.loads(request.body.decode())
+
+    try:
+        token = Token.objects.get(key=req_body['token'])
+        user = User.objects.get(pk=token.user_id)
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
+
+    my_saved = list(Project.objects.filter(user=user).values('name'))
+
+    data = json.dumps({"continue": True, "my_saved": my_saved})
+    return HttpResponse(data, content_type='application/json')

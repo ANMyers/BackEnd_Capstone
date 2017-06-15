@@ -1,6 +1,6 @@
 <div class="container">
     <h1>My Saved</h1>
-    <div class="row">
-        <p>My Saved page so stuff can go here</p>
+    <div class="row" ng-repeat="project in my_projects">
+        <a href="" ng-click="project( ((project.name)) )">((project.name))</a>
     </div>
 </div>
