@@ -1,10 +1,14 @@
-from django.http import HttpResponse
+from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.models import User, Group
-from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from rest_framework.authtoken.models import Token
 import json
 from Recognition.models import *
 from sklearn.neighbors import NearestNeighbors
+
+from sklearn.cluster import KMeans
+import numpy as np
 
 # Create your views here.
 @csrf_exempt
@@ -33,6 +37,8 @@ def register_user(request):
     # Use the REST Framework's token generator on the new user account
     token = Token.objects.create(user=new_user)
 
+    login(request, user=new_user)
+
     # Return the token to the client
     data = json.dumps({"token":token.key})
     return HttpResponse(data, content_type='application/json')
@@ -53,11 +59,67 @@ def kmeans(request):
 
     """
     req_body = json.loads(request.body.decode())
+    token = req_body['token']
+    # print("\n\n\nUser?: {}\n\n".format(request.user))
 
-    print("\n\n\n---->>>{}\n\n".format(req_body))
+    try:
+        token = Token.objects.get(key=token)
+        user = User.objects.get(pk=token.user_id)
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
 
-    data = json.dumps({"results":"We're almost there."})
+    project = Project.objects.get(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
+
+    column_name = 'dataset'
+    datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
+
+    list_of_indexs = [each['index'] for each in req_body['ignored']]
+
+    results = reformat_from_query(datasets, list_of_indexs, column_name)
+
+    print("\n\none row: {}\nremoved: {}\n\n".format(results['results'][0], results['removed']))
+
+    kmeans = KMeans(n_clusters=2, precompute_distances=True, random_state=1, max_iter=500).fit(results['results'][:499])
+
+    prediction = kmeans.predict(results['results'][500:550])
+    # kmeans.labels_
+    # kmeans.cluster_centers_
+
+    print("\n\n\nprediction?: {}\n\n".format(dir(prediction)))
+
+    # print("\n\n\n---->>>{}\n\n".format(req_body))
+    data = json.dumps({"results":"We got the dataset."})
     return HttpResponse(data, content_type='application/json')
+
+
+def reformat_from_query(dataset, indexs_to_remove, column_name):
+
+    formated_list = list()
+    indexs_removed = set()
+
+    for counter, one_set in enumerate(dataset):
+        new_list = one_set[column_name].split(',')
+        start = len(new_list) - 1
+        for i in range(start, -1, -1):
+            if i in indexs_to_remove:
+                indexs_removed.add(i)
+                del new_list[i]
+            else:
+                try:
+                    new_list[i] = float(new_list[i])
+                except ValueError:
+                    del new_list[i]
+                    indexs_removed.add(i)
+
+        formated_list.append(new_list)
+
+    results = {
+        "results": formated_list,
+        "removed": indexs_removed
+    }
+    return results
+
 
 @csrf_exempt
 def format_dataset(request):
@@ -78,15 +140,31 @@ def format_dataset(request):
 
     """
     req_body = json.loads(request.body.decode())
+    token = req_body['token']
+
+    try:
+        token = Token.objects.get(key=token)
+        user = User.objects.get(pk=token.user_id)
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
+
+    try:
+        Project.objects.get(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
+        data = json.dumps({"continue": False, "error": "You already have a project by that name. Please choose a different name for your project."})
+        return HttpResponse(data, content_type='application/json')
+    except Project.DoesNotExist:
+        new_project = Project(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
+        new_project.save()
+        
     list_of_data = req_body['dataset'].split('\n')
-    algorithm = req_body['algorithm']
 
     reformated_list = list()
     dicts_of_ignored_values = set()
 
     dataset_quantity = 0
 
-    for dataset in list_of_data:
+    for counter, dataset in enumerate(list_of_data):
         new_list = dataset.split(',')
         append = True
         for index, value in enumerate(new_list):
@@ -101,10 +179,15 @@ def format_dataset(request):
 
         if append:
             dataset_quantity = dataset_quantity + 1
-            reformated_list.append(new_list)
+            new_string = ','.join(str(value) for value in new_list)
+            dataset = ProjectDataset(user=user, project=new_project, dataset=new_string)
+            dataset.save()
+        if counter == 1:
+            sample_set = new_list
+            
 
-    sample_set = reformated_list[0]
-
+# This will be used to determine which algorith will fit their dataset based off of amount of numbers per set.
+# Once a tree structure algorithm is implemented site can allow a majority of words in their dataset but thats Recognition 2.0
     # percentage = percentage_of_numbers(sample_set)
 
     # if algorithm == 'Nearest Neighbor':
@@ -119,6 +202,7 @@ def format_dataset(request):
     dicts_of_ignored_values = list(dicts_of_ignored_values)
     data = json.dumps({"sample_set":sample_set, "indexs": dicts_of_ignored_values, "continue": go_on, "amount": dataset_quantity})
     return HttpResponse(data, content_type='application/json')
+
 
 def percentage_of_numbers(sample):
     numbers = 0
