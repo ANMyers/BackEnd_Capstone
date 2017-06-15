@@ -78,15 +78,16 @@ def kmeans(request):
 
     results = reformat_from_query(datasets, list_of_indexs, column_name)
 
-    print("\n\none row: {}\nremoved: {}\n\n".format(results['results'][0], results['removed']))
+    print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
 
-    kmeans = KMeans(n_clusters=2, precompute_distances=True, random_state=1, max_iter=500).fit(results['results'][:499])
+    kmeans = KMeans(n_clusters=2, precompute_distances=True, random_state=1, max_iter=10000).fit(results['results'][:499])
 
     prediction = kmeans.predict(results['results'][500:550])
     # kmeans.labels_
     # kmeans.cluster_centers_
 
-    print("\n\n\nprediction?: {}\n\n".format(dir(prediction)))
+    print("\n\n\ncenters: {}\n\n".format(kmeans.cluster_centers_))
+    print("\n\n\nprediction?: {}\n\n".format(prediction))
 
     # print("\n\n\n---->>>{}\n\n".format(req_body))
     data = json.dumps({"results":"We got the dataset."})

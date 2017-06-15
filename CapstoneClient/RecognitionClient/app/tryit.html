@@ -1,10 +1,13 @@
 <div class="container">
     <div class="row" ng-show="step1">
         <h1>Step One</h1>
+        <label>Name Your New Project: </label><input type="text" ng-model="project_name" name="project">
+        <br><br>
         <label>Select Your Algorithm: <select ng-model="SelectedAlgo" ng-options="algo for algo in algorithms">
         </select></label>
         <br><br>
-        To See a List of Datasets <a target="_blank" href="https://archive.ics.uci.edu/ml/datasets.html">Click Me!</a>
+        <a target="_blank" href="https://archive.ics.uci.edu/ml/datasets.html">Click Me!</a>
+        To See a List of Datasets<br>
         <br>
         <label>Upload Your Dataset: </label><input type="file" id="dataset" name="dataset">
         <br><br>
@@ -33,7 +36,8 @@
         <div class="row alert alert-danger" ng-show="train">
           <p ng-model="error">((train_message))</p>
         </div>
-        <button class="btn btn-secondary btn-sm" ng-click="save_training()">Save</button></span>
+        <button class="btn btn-secondary btn-sm" ng-click="save_training()">Save</button>
+        <span ng-show="train_values_set" class="glyphicon glyphicon-saved"></span>
       </div>
 
       <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>

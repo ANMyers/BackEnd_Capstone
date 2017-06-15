@@ -14,17 +14,19 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
   let renamed_variables = [];
 
   let run_kmeans = function() {
-      $http({
-      url: `${apiUrl}/kmeans/`,
-      method: "POST",
-      headers: {
-        'Authorization': "Token " + RootFactory.getToken()
-      },
-      data: {
-        "algorithm": $scope.SelectedAlgo,
-        "ignored": $scope.excludes,
-        "renamed": renamed_variables
-      }
+    $http({
+    url: `${apiUrl}/kmeans/`,
+    method: "POST",
+    headers: {
+      'Authorization': "Token " + RootFactory.getToken()
+    },
+    data: {
+      "algorithm": $scope.SelectedAlgo,
+      "project": $scope.project_name,
+      "ignored": $scope.excludes,
+      "renamed": renamed_variables,
+      "token": RootFactory.getToken()
+    }
     }).then(
       res => {
         console.log("Data: ", res.data);
@@ -43,7 +45,9 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     },
     data: {
       "algorithm": $scope.SelectedAlgo,
-      "dataset": $scope.dataset
+      "dataset": $scope.dataset,
+      "project": $scope.project_name,
+      "token": RootFactory.getToken()
     }
   }).then(
     res => {
@@ -58,7 +62,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
         $scope.amount = res.data.amount;
       } else {
         $scope.error = true;
-        $scope.error_message = "Please Choose a different dataset to match your algorithm.";
+        $scope.error_message = res.data.error;
       }
     },
     err => {
@@ -71,11 +75,11 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
         r = new FileReader();
     r.onloadend = function(e){
       $scope.dataset = e.target.result;
-      if ($scope.SelectedAlgo) {
+      if ($scope.SelectedAlgo && $scope.project_name) {
       format_dataset();
       } else {
+        $scope.error_message = 'Please Choose an Algorithm and a Project Name.';
         $scope.error = true;
-        $scope.error_message = 'Please Choose an Algorithm.';
       }
     };
     if (f) {
