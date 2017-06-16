@@ -1,5 +1,5 @@
 <div class="container">
-    <div class="row" ng-show="step1">
+    <div class="row">
         <h1>Step One</h1>
         <label>Name Your New Project: </label><input type="text" ng-model="project_name" name="project">
         <br><br>
@@ -12,54 +12,6 @@
         <label>Upload Your Dataset: </label><input type="file" id="dataset" name="dataset">
         <br><br>
         <button class="btn btn-primary" type="submit" ng-click="step_2()">Continue to Step 2</button>
-    </div>
-
-    <div class="row" ng-show="step2">
-      <h1>Step Two</h1>
-      <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
-
-      <div class="col-sm-6" style="height:625px; overflow-y:scroll;">
-      <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable</p>
-        <table>
-          <tr ng-repeat="sample in sample_set">
-            <td>((sample))</td>
-            <td><a href="" class="glyphicon glyphicon-remove" ng-click="variables_to_exclude( ((sample)) )"></a></td>
-          </tr>
-        </table><br>
-      </div>
-
-      <p><strong>Quantity of datasets available: ((amount))</strong><br><strong>Note: </strong>This is the amount of sets you have from what you uploaded in Step One.</p>
-
-      <div class="col-sm-6">
-        <p><strong>Quantity</strong> to train on: <input type="number" ng-model="train_on"></p>
-        <p><strong>Quantity</strong> to train against: <input type="number" ng-model="train_against"> </p>
-        <div class="row alert alert-danger" ng-show="train">
-          <p ng-model="error">((train_message))</p>
-        </div>
-        <button class="btn btn-secondary btn-sm" ng-click="save_training()">Save</button>
-        <span ng-show="train_values_set" class="glyphicon glyphicon-ok"></span>
-      </div>
-
-      <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
-
-      <div class="col-sm-6" style="height:150px; overflow-y:scroll;">
-        <div ng-repeat="var in variables">
-          <p>Index of: ((var[0]))  Value of: ((var[1]))</p>
-          <input type="text" id="((var[1]))" />
-          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="renamed" class="glyphicon glyphicon-ok"></span>
-        </div>
-      </div>
-
-      <p><strong>Variables You are Excluding: </strong></p>
-
-      <div class="col-sm-6 well" style="height:100px; overflow-y:scroll;" >
-        <div ng-repeat="exclude in excludes">
-          <p><strong>((exclude.value))</strong>   <a href="" class="glyphicon glyphicon-triangle-left" ng-click="variables_to_undo( ((exclude)) )"></a></p>
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn btn-primary" ng-click="step_3()">Run Algorithm</button>
-      </div>
     </div>
 
     <div class="row alert alert-danger" ng-show="error">

@@ -58,10 +58,12 @@ def kmeans(request):
         Adam Myers
 
     """
+    # decode the request body and show me whats in it
     req_body = json.loads(request.body.decode())
-    token = req_body['token']
-    # print("\n\n\nUser?: {}\n\n".format(request.user))
+    print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
 
+    # see if the is logged in (the hard way will refactor later for django way)
+    token = req_body['token']
     try:
         token = Token.objects.get(key=token)
         user = User.objects.get(pk=token.user_id)
@@ -69,29 +71,76 @@ def kmeans(request):
         data = json.dumps({"continue": False, "error": "User has not logged in."})
         return HttpResponse(data, content_type='application/json')
 
+    # grab user's project
     project = Project.objects.get(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
 
+    # grab dataset from user's project
     column_name = 'dataset'
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
-
     list_of_indexs = [each['index'] for each in req_body['ignored']]
-
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name)
 
+    print("\n\nresults amount: {}\n".format(len(results['results'])))
     print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
 
-    kmeans = KMeans(n_clusters=2, precompute_distances=True, random_state=1, max_iter=10000).fit(results['results'][:499])
+    start = int(req_body['train_on'])
+    stop = int(req_body['train_against'])
+    cluster_quantity = len(results['removed'])
 
-    prediction = kmeans.predict(results['results'][500:550])
+    train_on = results['results'][:start]
+    train_against = results['results'][-stop:]
+
+    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=True, random_state=1, max_iter=10000).fit(train_on)
+
+    pred = kmeans.predict(train_against)
+    prediction = list(int(each) for each in pred)
+    cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
+
+    labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
+    user_labels = user_labeled_centroids(labels, req_body['renamed'])
     # kmeans.labels_
     # kmeans.cluster_centers_
 
-    print("\n\n\ncenters: {}\n\n".format(kmeans.cluster_centers_))
-    print("\n\n\nprediction?: {}\n\n".format(prediction))
+    # print("\n\n\ncenters: {}\n\n".format(kmeans.cluster_centers_))
+    print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
+    print("\n\nprediction: {}\n".format(prediction))
+    print("\n\nlabels of each centroid: {}\n".format(cluster_indexs))
 
     # print("\n\n\n---->>>{}\n\n".format(req_body))
-    data = json.dumps({"results":"We got the dataset."})
+    data = json.dumps({"results":prediction})
     return HttpResponse(data, content_type='application/json')
+
+def user_labeled_centroids(labels, user_labels):
+    for i in range(len(labels)):
+        for p in range(len(user_labels)):
+            if labels[i] in user_labels[p]['value']:
+                labels[i] = user_labels[p]['renamed']
+                
+    print("\nrenamed labels?: {}\n".format(labels))
+
+
+
+def label_centroids(clusters_indexs, original, possible_variables):
+    val_count = {}
+    index_set = set()
+
+    for index in clusters_indexs:
+        print("\ncentroid labeled as: {} \n".format(index))
+        val_count[index] = {}
+
+        for i in range(len(possible_variables)):
+            val_count[index][possible_variables[i][1]] = 0
+            index_set.add(possible_variables[i][0])
+
+        for dataset_index in index_set:
+            for original_index in list(clusters_indexs[index]):
+                print("point: {}".format(original[original_index]['dataset'][dataset_index]))
+                val_count[index][original[original_index]['dataset'][dataset_index]] += 1
+
+        val_count[index] = max(val_count[index], key=lambda k: val_count[index][k])
+
+    print("\nvalue counter overall: {}\n".format(val_count))
+    return val_count
 
 
 def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
