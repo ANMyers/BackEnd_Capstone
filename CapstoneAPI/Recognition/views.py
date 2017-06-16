@@ -76,7 +76,7 @@ def kmeans(request):
 
     list_of_indexs = [each['index'] for each in req_body['ignored']]
 
-    results = reformat_from_query(datasets, list_of_indexs, column_name)
+    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name)
 
     print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
 
@@ -94,7 +94,7 @@ def kmeans(request):
     return HttpResponse(data, content_type='application/json')
 
 
-def reformat_from_query(dataset, indexs_to_remove, column_name):
+def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
 
     formated_list = list()
     indexs_removed = set()
@@ -110,14 +110,14 @@ def reformat_from_query(dataset, indexs_to_remove, column_name):
                 try:
                     new_list[i] = float(new_list[i])
                 except ValueError:
+                    indexs_removed.add((i, new_list[i]))
                     del new_list[i]
-                    indexs_removed.add(i)
 
         formated_list.append(new_list)
 
     results = {
         "results": formated_list,
-        "removed": indexs_removed
+        "removed": list(indexs_removed)
     }
     return results
 
@@ -146,6 +146,7 @@ def format_dataset(request):
     try:
         token = Token.objects.get(key=token)
         user = User.objects.get(pk=token.user_id)
+
     except Token.DoesNotExist:
         data = json.dumps({"continue": False, "error": "User has not logged in."})
         return HttpResponse(data, content_type='application/json')
@@ -154,6 +155,7 @@ def format_dataset(request):
         Project.objects.get(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
         data = json.dumps({"continue": False, "error": "You already have a project by that name. Please choose a different name for your project."})
         return HttpResponse(data, content_type='application/json')
+
     except Project.DoesNotExist:
         new_project = Project(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
         new_project.save()
@@ -187,7 +189,7 @@ def format_dataset(request):
             sample_set = new_list
             
 
-# This will be used to determine which algorith will fit their dataset based off of amount of numbers per set.
+# This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
 # Once a tree structure algorithm is implemented site can allow a majority of words in their dataset but thats Recognition 2.0
     # percentage = percentage_of_numbers(sample_set)
 
@@ -226,11 +228,38 @@ def my_saved(request):
     try:
         token = Token.objects.get(key=req_body['token'])
         user = User.objects.get(pk=token.user_id)
+
     except Token.DoesNotExist:
         data = json.dumps({"continue": False, "error": "User has not logged in."})
         return HttpResponse(data, content_type='application/json')
 
+
     my_saved = list(Project.objects.filter(user=user).values('name'))
 
     data = json.dumps({"continue": True, "my_saved": my_saved})
+    return HttpResponse(data, content_type='application/json')
+
+
+@csrf_exempt
+def my_project(request):
+
+    req_body = json.loads(request.body.decode())
+    print("\n\n\nreq_body?: {}\n\n".format(req_body))
+
+    try:
+        token = Token.objects.get(key=req_body['token'])
+        user = User.objects.get(pk=token.user_id)
+
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
+
+    project = Project.objects.get(user=user, name=req_body['project'])
+
+    column_name = 'dataset'
+    datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
+
+    results = reformat_from_query(dataset=datasets, column_name=column_name)
+
+    data = json.dumps({"continue": True, "sample_set": results['results'][0], "indexs": results['removed'], "amount": len(results['results']), "project": project.name, "algorithm": project.algorithm})
     return HttpResponse(data, content_type='application/json')

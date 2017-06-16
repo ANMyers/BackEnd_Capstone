@@ -1,6 +1,6 @@
 "use strict";
 
-app.controller("MySavedController", function($scope, $http, RootFactory, apiUrl) {
+app.controller("MySavedController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
   $scope.my_projects = [];
 
@@ -11,7 +11,7 @@ app.controller("MySavedController", function($scope, $http, RootFactory, apiUrl)
     'Authorization': "Token " + RootFactory.getToken()
   },
   data: {
-    "token": RootFactory.getToken()
+    "token": RootFactory.getToken(),
   }
   }).then(
     res => {
@@ -23,7 +23,26 @@ app.controller("MySavedController", function($scope, $http, RootFactory, apiUrl)
     });
 
   $scope.project = function(project) {
-    
-  };
+    console.log("hello she fired");
+    $http({
+    url: `${apiUrl}/my_project/`,
+    method: "POST",
+    headers: {
+      'Authorization': "Token " + RootFactory.getToken()
+    },
+    data: {
+      "token": RootFactory.getToken(),
+      "project": project
+    }
+    }).then(
+      res => {
+        console.log("Data: ", res.data);
+        TryItFactory.setsavedinfo(res.data);
+        $location.path('/Try_It/My_Project');
+      },
+      err => {
+        console.log("Error: ", err);
+      });
+    };
 
 });

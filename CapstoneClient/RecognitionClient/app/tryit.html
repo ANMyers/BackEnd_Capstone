@@ -37,7 +37,7 @@
           <p ng-model="error">((train_message))</p>
         </div>
         <button class="btn btn-secondary btn-sm" ng-click="save_training()">Save</button>
-        <span ng-show="train_values_set" class="glyphicon glyphicon-saved"></span>
+        <span ng-show="train_values_set" class="glyphicon glyphicon-ok"></span>
       </div>
 
       <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
@@ -46,7 +46,7 @@
         <div ng-repeat="var in variables">
           <p>Index of: ((var[0]))  Value of: ((var[1]))</p>
           <input type="text" id="((var[1]))" />
-          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="renamed" class="glyphicon glyphicon-saved"></span>
+          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="renamed" class="glyphicon glyphicon-ok"></span>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 <div class="container">
     <h1>My Saved</h1>
-    <div class="row" ng-repeat="project in my_projects">
-        <a href="" ng-click="project( ((project.name)) )">((project.name))</a>
+    <div class="row" ng-repeat="one in my_projects">
+        <p>((one.name)) <a href="" class="glyphicon glyphicon-repeat" ng-click="project( ((one.name)) )"></a></p>
     </div>
 </div>
