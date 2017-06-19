@@ -97,18 +97,49 @@ def kmeans(request):
     cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
 
     labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
-    user_labels = user_labeled_centroids(labels, req_body['renamed'])
+    user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
+    prediction = relabel_prediction(prediction, user_labels)
+    relabeled_accuracy = relabel_accuracy(labels['accuracy'], user_labels)
     # kmeans.labels_
     # kmeans.cluster_centers_
 
-    # print("\n\n\ncenters: {}\n\n".format(kmeans.cluster_centers_))
     print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
     print("\n\nprediction: {}\n".format(prediction))
-    print("\n\nlabels of each centroid: {}\n".format(cluster_indexs))
+    print("\n\naccuracy: {}\n".format(labels['accuracy']))
 
-    # print("\n\n\n---->>>{}\n\n".format(req_body))
-    data = json.dumps({"results":prediction})
+    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels})
     return HttpResponse(data, content_type='application/json')
+
+
+def relabel_accuracy(accuracy, user_labels):
+    new_dict = dict()
+    for ind, val in enumerate(accuracy):
+        new_dict[ind] = {}
+        new_dict[ind]['total'] = 0
+
+        # Used to generate the total per centroid of each answer starting with 0 for count on next loop
+        for index, quantity in enumerate(accuracy[ind]):
+            new_dict[ind]['total'] += accuracy[ind][quantity]
+            print("\naccuracy index: {}\nuser_labels: {}\n".format(index, user_labels))
+            if index in user_labels:
+                new_dict[ind][user_labels[index]] = 0
+
+        # Used to create percentage of dominate answer from total for accuracy
+        for letter, quantity in enumerate(accuracy[ind]):
+            new_dict[ind][user_labels[letter]] = int(accuracy[ind][quantity]) / int(new_dict[ind]['total'])
+
+    print("\nresults: {}\n".format(new_dict))
+    return new_dict
+            
+
+
+def relabel_prediction(prediction, user_labels):
+    new_list = list()
+    for pred in prediction:
+        new_list.append(user_labels[pred])
+
+    return new_list
+
 
 def user_labeled_centroids(labels, user_labels):
     for i in range(len(labels)):
@@ -116,16 +147,16 @@ def user_labeled_centroids(labels, user_labels):
             if labels[i] in user_labels[p]['value']:
                 labels[i] = user_labels[p]['renamed']
                 
-    print("\nrenamed labels?: {}\n".format(labels))
-
+    return labels
 
 
 def label_centroids(clusters_indexs, original, possible_variables):
     val_count = {}
     index_set = set()
+    accuracy_count = {}
 
+    # Iterate over cluster indexs for labeling centroids
     for index in clusters_indexs:
-        print("\ncentroid labeled as: {} \n".format(index))
         val_count[index] = {}
 
         for i in range(len(possible_variables)):
@@ -134,13 +165,16 @@ def label_centroids(clusters_indexs, original, possible_variables):
 
         for dataset_index in index_set:
             for original_index in list(clusters_indexs[index]):
-                print("point: {}".format(original[original_index]['dataset'][dataset_index]))
-                val_count[index][original[original_index]['dataset'][dataset_index]] += 1
+                val_count[index][original[original_index]['dataset'].split(',')[dataset_index]] += 1
 
+        accuracy_count[index] = val_count[index]
         val_count[index] = max(val_count[index], key=lambda k: val_count[index][k])
 
-    print("\nvalue counter overall: {}\n".format(val_count))
-    return val_count
+    results = {
+        'accuracy': accuracy_count,
+        'centroids': val_count
+    }
+    return results
 
 
 def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
@@ -153,7 +187,6 @@ def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
         start = len(new_list) - 1
         for i in range(start, -1, -1):
             if i in indexs_to_remove:
-                indexs_removed.add(i)
                 del new_list[i]
             else:
                 try:
