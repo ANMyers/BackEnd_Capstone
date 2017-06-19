@@ -9,6 +9,12 @@ app.factory('TryItFactory', function(){
             },
             getsavedinfo () {
                 return saved_info;
+            },
+            setresultsinfo (information) {
+                saved_info = information;
+            },
+            getresultsinfo () {
+                return saved_info;
             }
         };
 });

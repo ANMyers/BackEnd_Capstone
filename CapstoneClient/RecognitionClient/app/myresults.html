@@ -1,0 +1,14 @@
+<div class="container">
+  <div class="row">
+      <h1>Your Results!</h1>
+        <table style="width:50%">
+          <tr ng-repeat="each in display">
+            <td ng-if="each[0] == 'total'"><strong>Cluster Total: <br></strong></td>
+            <td ng-if="each[0] != 'total'">Variable ((each[0]))'s Percent:</td>
+            <td ng-if="each[0] == 'total'"><strong>((each[1]))</strong></td>
+            <td ng-if="each[0] != 'total'">((each[1]))%</td>
+          </tr>
+        </table><br>
+        <button class="btn btn-primary btn-sm" ng-click="back()">Go Back</button>
+  </div>
+</div>

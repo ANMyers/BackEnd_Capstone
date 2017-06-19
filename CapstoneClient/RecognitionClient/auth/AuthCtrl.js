@@ -1,6 +1,6 @@
 "use strict";
 
-app.controller('AuthController', function($scope, $http, $location, RootFactory, apiUrl, $timeout) {
+app.controller('AuthController', function($scope, $http, $location, RootFactory, apiUrl) {
 
   $scope.user = {
     username: "Tavern",
@@ -11,6 +11,14 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
   };
 
   $scope.register = function() {
+    let user_info = {
+      "username": $scope.user.username,
+      "password": $scope.user.password,
+      "email": $scope.user.email,
+      "first_name": $scope.user.first_name,
+      "last_name": $scope.user.last_name
+    };
+    console.log(user_info);
       $http({
         url: `${apiUrl}/register`,
         method: "POST",

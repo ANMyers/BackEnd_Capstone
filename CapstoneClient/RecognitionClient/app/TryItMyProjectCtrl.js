@@ -1,6 +1,6 @@
 "use strict";
 
-app.controller("MyProjectController", function($scope, $http, RootFactory, apiUrl, TryItFactory) {
+app.controller("MyProjectController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
   let data = TryItFactory.getsavedinfo();
   $scope.SelectedAlgo = data.algorithm;
@@ -36,6 +36,8 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     }).then(
       res => {
         console.log("Data: ", res.data);
+        TryItFactory.setresultsinfo(res.data);
+        $location.path('/Try_It/My_Results');
       },
       err => {
         console.log("Error: ", err);

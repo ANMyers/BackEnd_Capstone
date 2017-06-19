@@ -2,8 +2,8 @@
     <h1>Login</h1>
     <div class="row">
         <div class="form-group">
-          <label><strong>Username: </strong><input type="text" placeholder="Tavern53" value="((user.username))"></label><br>
-          <label><strong>Password: </strong><input type="password" placeholder="1234567" value="((user.password))"></label><br>
+          <label><strong>Username: </strong><input ng-model="user.username" type="text" placeholder="Tavern53" value="((user.username))"></label><br>
+          <label><strong>Password: </strong><input ng-model="user.password" type="password" placeholder="1234567" value="((user.password))"></label><br>
           <button class="btn btn-primary" type="submit" ng-click="login()">Log In</button>
         </div>
     </div>

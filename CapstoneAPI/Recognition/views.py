@@ -85,12 +85,12 @@ def kmeans(request):
 
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
-    cluster_quantity = len(results['removed'])
+    cluster_quantity = len(results['removed'])*4
 
     train_on = results['results'][:start]
     train_against = results['results'][-stop:]
 
-    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=True, random_state=1, max_iter=10000).fit(train_on)
+    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=2, max_iter=1000).fit(train_on)
 
     pred = kmeans.predict(train_against)
     prediction = list(int(each) for each in pred)
@@ -99,7 +99,7 @@ def kmeans(request):
     labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
     user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
     prediction = relabel_prediction(prediction, user_labels)
-    relabeled_accuracy = relabel_accuracy(labels['accuracy'], user_labels)
+    relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
     # kmeans.labels_
     # kmeans.cluster_centers_
 
@@ -107,7 +107,7 @@ def kmeans(request):
     print("\n\nprediction: {}\n".format(prediction))
     print("\n\naccuracy: {}\n".format(labels['accuracy']))
 
-    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels})
+    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project']})
     return HttpResponse(data, content_type='application/json')
 
 
@@ -120,13 +120,16 @@ def relabel_accuracy(accuracy, user_labels):
         # Used to generate the total per centroid of each answer starting with 0 for count on next loop
         for index, quantity in enumerate(accuracy[ind]):
             new_dict[ind]['total'] += accuracy[ind][quantity]
-            print("\naccuracy index: {}\nuser_labels: {}\n".format(index, user_labels))
-            if index in user_labels:
-                new_dict[ind][user_labels[index]] = 0
+            # print("\naccuracy index: {}\nuser_labels: {}\n".format(index, user_labels))
+            for each in user_labels:
+                if each['value'] == quantity:
+                    new_dict[ind][each['renamed']] = 0
 
-        # Used to create percentage of dominate answer from total for accuracy
+        # Used to create percentage of majority variable from total for accuracy
         for letter, quantity in enumerate(accuracy[ind]):
-            new_dict[ind][user_labels[letter]] = int(accuracy[ind][quantity]) / int(new_dict[ind]['total'])
+            for each in user_labels:
+                if quantity == each['value']:
+                    new_dict[ind][each['renamed']] = round((int(accuracy[ind][quantity]) / int(new_dict[ind]['total'])* 100), 2)
 
     print("\nresults: {}\n".format(new_dict))
     return new_dict
