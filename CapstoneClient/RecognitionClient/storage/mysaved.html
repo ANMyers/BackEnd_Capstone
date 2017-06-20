@@ -3,7 +3,7 @@
     <p><strong>Note: </strong>Click on a project name to load that project.</p><br>
     <div class="row">
         <ul class="list-group" ng-repeat="one in my_projects">
-          <a class="list-group-item list-group-item-info lead" href="" ng-click="project( ((one.name)) )">((one.name))</a>
+          <li class="list-group-item list-group-item-info lead"><a href="" ng-click="project( ((one.name)) )">((one.name))</a>  <a class="glyphicon glyphicon-trash pull-right" href="" ng-click="delete_project( ((one.name)) )"></a></li>
         </ul>
     </div>
     <div class="row alert alert-danger" ng-show="error">
