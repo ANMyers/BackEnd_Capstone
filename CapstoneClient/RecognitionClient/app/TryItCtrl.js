@@ -2,7 +2,7 @@
 
 app.controller("TryItController", function($scope, $http, $location, RootFactory, apiUrl, TryItFactory) {
 
-  $scope.algorithms = ['Nearest Neighbor', 'Another Algorithm'];
+  $scope.algorithms = ['Nearest Neighbor', 'Support Vector Classification'];
   $scope.error = false;
 
   let format_dataset = function() {

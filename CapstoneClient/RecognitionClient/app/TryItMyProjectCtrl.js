@@ -3,23 +3,59 @@
 app.controller("MyProjectController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
   let data = TryItFactory.getsavedinfo();
-  $scope.SelectedAlgo = data.algorithm;
-  $scope.variables = data.indexs;
-  $scope.sample_set = data.sample_set;
-  $scope.sample_set2 = data.sample_set.slice(0);
-  $scope.amount = data.amount;
-
-  $scope.excludes = [];
-  $scope.error = false;
-  $scope.renamed = false;
-  $scope.renamed_each = {};
-  $scope.train_values_set = false;
 
   let renamed_variables = [];
+  $scope.excludes = [];
+
+  $scope.renamed_each = {};
+
+  $scope.train_values_set = false;
+  $scope.renamed = false;
+  $scope.error = false;
+
+  if (data.length !== 0){
+    $scope.data_loaded = true;
+    $scope.SelectedAlgo = data.algorithm;
+    $scope.variables = data.indexs;
+    $scope.sample_set = data.sample_set;
+    $scope.sample_set2 = data.sample_set.slice(0);
+    $scope.amount = data.amount;
+  } else {
+    $scope.data_loaded = false;
+    $scope.error = true;
+    $scope.error_message = "You don't have any data to load... sorry :(";
+  }
 
   let run_kmeans = function() {
     $http({
     url: `${apiUrl}/kmeans/`,
+    method: "POST",
+    headers: {
+      'Authorization': "Token " + RootFactory.getToken()
+    },
+    data: {
+      "algorithm": data.algorithm,
+      "project": data.project,
+      "ignored": $scope.excludes,
+      "renamed": renamed_variables,
+      "train_on": $scope.train_on,
+      "train_against": $scope.train_against,
+      "token": RootFactory.getToken()
+    }
+    }).then(
+      res => {
+        console.log("Data: ", res.data);
+        TryItFactory.setresultsinfo(res.data);
+        $location.path('/Try_It/My_Results');
+      },
+      err => {
+        console.log("Error: ", err);
+      });
+  };
+
+  let run_SVC = function() {
+    $http({
+    url: `${apiUrl}/SVC/`,
     method: "POST",
     headers: {
       'Authorization': "Token " + RootFactory.getToken()
@@ -56,6 +92,8 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       $scope.error = false;
       if ($scope.SelectedAlgo == 'Nearest Neighbor') {
         run_kmeans();
+      } else if ($scope.SelectedAlgo == 'Support Vector Classification') {
+        run_SVC();
       }
     }
   };

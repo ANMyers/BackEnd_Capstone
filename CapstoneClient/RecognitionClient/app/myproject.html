@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" ng-if="data_loaded">
   <div class="row">
       <h1>Step Two</h1>
       <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
@@ -17,7 +17,7 @@
 
       <div class="col-sm-6">
         <p><strong>Quantity</strong> to train on: <input type="number" ng-model="train_on"></p>
-        <p><strong>Quantity</strong> to train against: <input type="number" ng-model="train_against"> </p>
+        <p><strong>Quantity</strong> to predict on: <input type="number" ng-model="train_against"> </p>
         <div class="row alert alert-danger" ng-show="train">
           <p ng-model="error">((train_message))</p>
         </div>
@@ -46,7 +46,7 @@
         <button class="btn btn-primary" ng-click="step_3()">Run Algorithm</button>
       </div>
     </div>
+</div>
     <div class="row alert alert-danger" ng-show="error">
         <p ng-model="error">((error_message))</p>
     </div>
-</div>

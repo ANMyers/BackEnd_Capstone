@@ -250,6 +250,51 @@ def format_dataset(request):
         
     list_of_data = req_body['dataset'].split('\n')
 
+    if req_body['algorithm'] == 'Nearest Neighbor':
+        formated = format_for_kmeans(list_of_data, user, new_project)
+    elif req_body['algorithm'] == 'Support Vector Classification':
+        formated = format_for_svc(list_of_data, user, new_project)
+
+# This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
+# Once a tree structure algorithm is implemented site can allow a majority of words in their dataset but thats Recognition 2.0
+    percentage = percentage_of_numbers(formated['sample_set'])
+
+    if req_body['algorithm'] == 'Nearest Neighbor':
+        if percentage > 0.80:
+            pass
+        else:
+            go_on = False
+            data = json.dumps({"continue": go_on, "error": "Please Choose another algorithm for this dataset."})
+            return HttpResponse(data, content_type='application/json')
+
+    go_on = True
+
+    dicts_of_ignored_values = list(dicts_of_ignored_values)
+    data = json.dumps({
+        "sample_set":formated['sample_set'],
+        "indexs": formated['dicts_of_ignored_values'],
+        "continue": go_on,
+        "amount": formated['dataset_quantity'],
+        "algorithm": req_body['algorithm']
+    })
+    return HttpResponse(data, content_type='application/json')
+
+
+def percentage_of_numbers(sample):
+    numbers = 0
+    total = 0
+    for each in sample:
+        try:
+            float(each)
+            numbers = numbers + 1
+            total = total + 1
+        except ValueError:
+            total = total + 1
+
+    return numbers / total
+
+
+def format_for_kmeans(list_of_data, user, new_project):
     reformated_list = list()
     dicts_of_ignored_values = set()
 
@@ -278,38 +323,60 @@ def format_dataset(request):
             dataset.save()
         if counter == 1:
             sample_set = new_list
-            
 
-# This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
-# Once a tree structure algorithm is implemented site can allow a majority of words in their dataset but thats Recognition 2.0
-    # percentage = percentage_of_numbers(sample_set)
-
-    # if algorithm == 'Nearest Neighbor':
-    #     if percentage > 0.75:
-    #         go_on = True
-    #     else:
-    #         go_on = False
-    # else:
-    #     go_on = True
-    go_on = True
-
-    dicts_of_ignored_values = list(dicts_of_ignored_values)
-    data = json.dumps({"sample_set":sample_set, "indexs": dicts_of_ignored_values, "continue": go_on, "amount": dataset_quantity})
-    return HttpResponse(data, content_type='application/json')
+    results = {
+        "sample_set": sample_set,
+        "reformated_list": reformated_list,
+        "dataset_quantity": dataset_quantity,
+        "dicts_of_ignored_values": dicts_of_ignored_values
+    }
+    return results
 
 
-def percentage_of_numbers(sample):
-    numbers = 0
-    total = 0
-    for each in sample:
-        try:
-            float(each)
-            numbers = numbers + 1
-            total = total + 1
-        except ValueError:
-            total = total + 1
+####################### This is where you left off for creating svc routing ###########################
+####################### This is where you left off for creating svc routing ###########################
+####################### This is where you left off for creating svc routing ###########################
+def format_for_svc(list_of_data, user, new_project):
+    reformated_list = list()
+    dicts_of_ignored_values = set()
 
-    return numbers / total
+    dataset_quantity = 0
+
+    for counter, dataset in enumerate(list_of_data):
+        new_list = dataset.split(',')
+        append = True
+        for index, value in enumerate(new_list):
+            try:
+                new_list[index] = float(value)
+            except ValueError:
+                if len(value) == 0:
+                    append = False
+                else:
+                    if value == '?':
+                        new_tuple = (index, "Question Mark")
+                    else:
+                        new_tuple = (index, value)
+                    dicts_of_ignored_values.add(new_tuple)
+
+        if append:
+            dataset_quantity = dataset_quantity + 1
+            new_string = ','.join(str(value) for value in new_list)
+            dataset = ProjectDataset(user=user, project=new_project, dataset=new_string)
+            dataset.save()
+        if counter == 1:
+            sample_set = new_list
+
+    results = {
+        "sample_set": sample_set,
+        "reformated_list": reformated_list,
+        "dataset_quantity": dataset_quantity,
+        "dicts_of_ignored_values": dicts_of_ignored_values
+    }
+    return results
+####################### This is where you left off for creating svc routing ###########################
+####################### This is where you left off for creating svc routing ###########################
+####################### This is where you left off for creating svc routing ###########################
+
 
 @csrf_exempt
 def my_saved(request):
