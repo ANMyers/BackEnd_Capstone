@@ -1,6 +1,6 @@
 # About
    Hi, my name is Adam Myers and I'm a student at Nashville Software School.
-This repository is my second capstone from attending the school. This is my attempt at building a machine learning application from a user choosen dataset. I utilize the (UCI Machine Learning Repository)[https://archive.ics.uci.edu/ml/datasets.html] for retrieving datasets to iterate over. This site is being built to allow users to upload a dataset then run an alogorithm on that dataset.
+This repository is my second capstone from attending the school. This is my attempt at building a machine learning application from a user choosen dataset. I utilize the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets.html) for retrieving datasets to iterate over. This site is being built to allow users to upload a dataset then run an alogorithm on that dataset.
 
 # Why?
    The reason I went with this project is because over the course of my 
@@ -17,6 +17,7 @@ to make sure you have installed for the backend:
 ### Prerequisites
 
 Install [pip](https://packaging.python.org/installing/)
+
 Install [Python 3.6](https://www.python.org/downloads/)
 
 From your terminal you can now use the following commands:
