@@ -21,6 +21,7 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
   }).then(
     res => {
       console.log("Data: ", res.data);
+      $("#LoadingModal").modal("hide");
       if (res.data['continue']) {
         TryItFactory.setsavedinfo(res.data);
         $location.path('/Try_It/My_Project');
@@ -40,7 +41,8 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     r.onloadend = function(e){
       $scope.dataset = e.target.result;
       if ($scope.SelectedAlgo && $scope.project_name) {
-      format_dataset();
+        $("#LoadingModal").modal("show");
+        format_dataset();
       } else {
         $scope.error_message = 'Please Choose an Algorithm and a Project Name.';
         $scope.error = true;

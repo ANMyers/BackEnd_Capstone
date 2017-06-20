@@ -6,7 +6,7 @@
       <div class="col-sm-5 well" style="height:625px; overflow-y:scroll; margin-right:40px">
       <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable</p>
         <table>
-          <tr ng-repeat="sample in sample_set">
+          <tr ng-repeat="sample in sample_set track by $index">
             <td>((sample))</td>
             <td><a href="" class="glyphicon glyphicon-remove" ng-click="variables_to_exclude( ((sample)) )"></a></td>
           </tr>
@@ -28,10 +28,10 @@
       <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
 
       <div class="col-sm-6 well" style="height:150px; overflow-y:scroll;">
-        <div ng-repeat="var in variables">
+        <div ng-repeat="var in variables track by $index">
           <p>Index of: ((var[0]))  Value of: ((var[1]))</p>
-          <input type="text" id="((var[1]))" />
-          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="((var[1]))" class="glyphicon glyphicon-ok"></span>
+          <input type="text" id="(($index))" accept=".txt" />
+          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)), (($index)) )">Rename</button><span ng-show="check(($index))" class="glyphicon glyphicon-ok"></span>
         </div>
       </div>
 

@@ -70,14 +70,15 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
   };
 
-  $scope.rename_value = function(v1) {
-    let name = document.getElementById(v1[1]).value;
+  $scope.rename_value = function(v1, index) {
+    let name = document.getElementById(index).value;
     let renamed = {
       'index': v1[0],
       'value': v1[1],
       'renamed': name
     };
-    $scope[v1[1]] = true;
+    let variable = 'check' + index;
+    $scope[variable] = true;
     check_if_variable_is_already_named(renamed);
     check_if_variables_are_named();
     console.log(renamed_variables);

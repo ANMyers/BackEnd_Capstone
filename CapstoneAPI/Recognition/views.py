@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from rest_framework.authtoken.models import Token
 import json
 from Recognition.models import *
-from sklearn.neighbors import NearestNeighbors
+from sklearn import preprocessing
 
 from sklearn.cluster import KMeans
 import numpy as np
@@ -195,7 +195,10 @@ def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
                 try:
                     new_list[i] = float(new_list[i])
                 except ValueError:
-                    indexs_removed.add((i, new_list[i]))
+                    if new_list[i] == '?':
+                        indexs_removed.add((i, "Question Mark"))
+                    else:
+                        indexs_removed.add((i, new_list[i]))
                     del new_list[i]
 
         formated_list.append(new_list)
@@ -262,7 +265,10 @@ def format_dataset(request):
                 if len(value) == 0:
                     append = False
                 else:
-                    new_tuple = (index, value)
+                    if value == '?':
+                        new_tuple = (index, "Question Mark")
+                    else:
+                        new_tuple = (index, value)
                     dicts_of_ignored_values.add(new_tuple)
 
         if append:
@@ -322,6 +328,27 @@ def my_saved(request):
     my_saved = list(Project.objects.filter(user=user).values('name'))
 
     data = json.dumps({"continue": True, "my_saved": my_saved})
+    return HttpResponse(data, content_type='application/json')
+
+
+@csrf_exempt
+def delete_project(request):
+    req_body = json.loads(request.body.decode())
+
+    try:
+        token = Token.objects.get(key=req_body['token'])
+        user = User.objects.get(pk=token.user_id)
+
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
+
+    project = Project.objects.get(user=user, name=req_body['project'])
+
+    data = json.dumps({"continue": True, "project": project.name, "algorithm": project.algorithm})
+
+    project.delete()
+
     return HttpResponse(data, content_type='application/json')
 
 
