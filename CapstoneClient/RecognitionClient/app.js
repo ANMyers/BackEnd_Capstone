@@ -37,6 +37,14 @@ app.config(function($interpolateProvider, $routeProvider){
 				controller: 'TryItController',
 				templateUrl: 'RecognitionClient/app/tryit.html'
 			})
+			.when('/Try_It/My_Project', {
+				controller: 'MyProjectController',
+				templateUrl: 'RecognitionClient/app/myproject.html'
+			})
+			.when('/Try_It/My_Results', {
+				controller: 'MyResultsController',
+				templateUrl: 'RecognitionClient/app/myresults.html'
+			})
 			.when('/My_Saved', {
 				controller: 'MySavedController',
 				templateUrl: 'RecognitionClient/storage/mysaved.html'

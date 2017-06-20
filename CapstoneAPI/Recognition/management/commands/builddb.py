@@ -22,4 +22,4 @@ class Command(BaseCommand):
 		management.call_command('migrate')
 		UserFactory.create_batch(size=10)
 		ProjectFactory.create_batch(size=10)
-		ProjectDatasetFactory.create_batch(size=50)
+		ProjectDatasetFactory.create_batch(size=2)

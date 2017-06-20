@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="row">
+      <div class="col-sm-7">
+      <h2>Your algorithm produced ((cluster_amount)) clusters</h2>
+      <p><strong>Note:</strong> below is a list of each cluster's percentage of plotted points.</p>
+        <div class="well" style="height:675px; overflow-y:scroll;">
+          <table class="table table-striped" style="width:100%">
+            <th>Details</th>
+            <th>Total / Percentage</th>
+            <tr ng-repeat="each in display">
+              <td ng-if="each[0] == 'total'"><strong>Cluster ((each[2])) Total: <br></strong></td>
+              <td ng-if="each[0] != 'total'">True ((each[0]))'s Percent:</td>
+              <td ng-if="each[0] == 'total'"><strong>((each[1]))</strong></td>
+              <td ng-if="each[0] != 'total'">((each[1]))%</td>
+            </tr>
+          </table><br>
+        </div>
+      </div>
+      <div class="col-sm-5">
+      <h2>Your prediction results:</h2>
+      <p><strong>Note:</strong> List of each prediction made by the algorithm.</p>
+        <div class="well" style="height:675px; overflow-y:scroll;">
+          <table class="table table-striped" style="width:100%">
+            <th>Index</th>
+            <th>Predicted In</th>
+            <tr ng-repeat="pred in prediction track by $index">
+              <td><strong>(($index))<br></strong></td>
+              <td>((pred))<br></td>
+            </tr>
+          </table><br>
+        </div>
+      </div>
+  </div>
+  <button class="btn btn-primary btn-sm" ng-click="back()">Go Back</button>
+</div>
