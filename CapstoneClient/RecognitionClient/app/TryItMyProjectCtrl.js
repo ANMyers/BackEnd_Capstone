@@ -77,6 +77,7 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       'value': v1[1],
       'renamed': name
     };
+    $scope[v1[1]] = true;
     check_if_variable_is_already_named(renamed);
     check_if_variables_are_named();
     console.log(renamed_variables);

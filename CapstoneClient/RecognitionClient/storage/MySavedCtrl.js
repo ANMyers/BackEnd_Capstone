@@ -15,8 +15,13 @@ app.controller("MySavedController", function($scope, $http, RootFactory, apiUrl,
   }
   }).then(
     res => {
-      console.log("Data: ", res.data);
-      $scope.my_projects = res.data.my_saved;
+      if (res.data['continue']) {
+        console.log("Data: ", res.data);
+        $scope.my_projects = res.data.my_saved;
+      } else {
+        $scope.error = true;
+        $scope.error_message = res.data.error;
+      }
     },
     err => {
       console.log("Error: ", err);

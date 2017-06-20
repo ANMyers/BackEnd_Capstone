@@ -1,6 +1,12 @@
 <div class="container">
-    <h1>My Saved</h1>
-    <div class="row" ng-repeat="one in my_projects">
-        <p>((one.name)) <a href="" class="glyphicon glyphicon-repeat" ng-click="project( ((one.name)) )"></a></p>
+    <h1>My Saved Projects</h1>
+    <p><strong>Note: </strong>Click on a project name to load that project.</p><br>
+    <div class="row">
+        <ul class="list-group" ng-repeat="one in my_projects">
+          <a class="list-group-item list-group-item-info lead" href="" ng-click="project( ((one.name)) )">((one.name))</a>
+        </ul>
+    </div>
+    <div class="row alert alert-danger" ng-show="error">
+        <p ng-model="error">((error_message))</p>
     </div>
 </div>

@@ -85,12 +85,12 @@ def kmeans(request):
 
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
-    cluster_quantity = len(results['removed'])*4
+    cluster_quantity = len(results['removed'])*3
 
     train_on = results['results'][:start]
     train_against = results['results'][-stop:]
 
-    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=2, max_iter=1000).fit(train_on)
+    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
 
     pred = kmeans.predict(train_against)
     prediction = list(int(each) for each in pred)
@@ -107,7 +107,7 @@ def kmeans(request):
     print("\n\nprediction: {}\n".format(prediction))
     print("\n\naccuracy: {}\n".format(labels['accuracy']))
 
-    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project']})
+    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
     return HttpResponse(data, content_type='application/json')
 
 

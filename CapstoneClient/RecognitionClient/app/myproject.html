@@ -3,7 +3,7 @@
       <h1>Step Two</h1>
       <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
 
-      <div class="col-sm-6" style="height:625px; overflow-y:scroll;">
+      <div class="col-sm-5 well" style="height:625px; overflow-y:scroll; margin-right:40px">
       <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable</p>
         <table>
           <tr ng-repeat="sample in sample_set">
@@ -27,11 +27,11 @@
 
       <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
 
-      <div class="col-sm-6" style="height:150px; overflow-y:scroll;">
+      <div class="col-sm-6 well" style="height:150px; overflow-y:scroll;">
         <div ng-repeat="var in variables">
           <p>Index of: ((var[0]))  Value of: ((var[1]))</p>
           <input type="text" id="((var[1]))" />
-          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="renamed" class="glyphicon glyphicon-ok"></span>
+          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)) )">Rename</button><span ng-show="((var[1]))" class="glyphicon glyphicon-ok"></span>
         </div>
       </div>
 

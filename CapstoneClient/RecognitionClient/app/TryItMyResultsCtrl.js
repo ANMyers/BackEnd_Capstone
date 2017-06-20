@@ -2,18 +2,24 @@
 
 app.controller("MyResultsController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
-    $scope.display = [];
     let data = TryItFactory.getresultsinfo();
+    $scope.display = [];
+    $scope.cluster_amount = data.cluster_amount;
+    $scope.prediction = [];
     console.log("data after results controller", data);
 
-    for (var key in data.accuracy) {
-        for (var name in data.accuracy[key]) {
+    for (let key in data.accuracy) {
+        for (let name in data.accuracy[key]) {
             let display = [];
-            console.log("key: ", name, "value: ", data.accuracy[key][name]);
             display.push(name); 
             display.push(data.accuracy[key][name]);
+            display.push(data.centroids[key]); 
             $scope.display.push(display);
         }
+    }
+
+    for (let pred in data.results) {
+        $scope.prediction.push(data.results[pred]);
     }
 
     $scope.back = function() {

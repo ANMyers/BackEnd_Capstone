@@ -1,6 +1,7 @@
 "use strict";
 
 app.controller('AuthController', function($scope, $http, $location, RootFactory, apiUrl) {
+  $scope.loggedin = false;
 
   $scope.user = {
     username: "Tavern",
@@ -36,6 +37,8 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
         res => {
           RootFactory.setToken(res.data.token);
           if (res.data.token !== "") {
+            $scope.loggedin = true;
+            $("#RegisterModal").modal("hide");
             $location.path('/home');
           }
         },
@@ -55,6 +58,8 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
         res => {
           RootFactory.setToken(res.data.token);
           if (res.data.token !== "") {
+            $scope.loggedin = true;
+            $("#LoginModal").modal("hide");
             $location.path('/home');
           }
         },
@@ -62,7 +67,14 @@ app.controller('AuthController', function($scope, $http, $location, RootFactory,
       );
   };
 
-  // $timeout($scope.login(), 500);  
+  $scope.logout = function() {
+      
+    RootFactory.setToken("");
+      $scope.loggedin = false;
+      $("#LogoutModal").modal("show");
+      $location.path('/home');
+
+  };
 
 
 });
