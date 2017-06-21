@@ -81,7 +81,6 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
   };
 
     $scope.step_3 = function() {
-    $scope.save_training();
     if ($scope.train_values_set === false) {
       $scope.error = true;
       $scope.error_message = "Please Set the Values you want to train on and train against.";
@@ -155,21 +154,23 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
   };
 
   $scope.save_training = function() {
-    if ($scope.train_on <= 0 || $scope.train_on === null || $scope.train_on === undefined) {
+    $scope.train_on = this.train_on;
+    $scope.train_against = this.train_against;
+    if (this.train_on <= 0 || this.train_on === null || this.train_on === undefined) {
       $scope.train = true;
       $scope.train_message = `Quantity to train on Must be higher than 0`; 
       $scope.train_values_set = false;
-    } else if ($scope.train_against <= 0 || $scope.train_against === null || $scope.train_against === undefined) {
+    } else if (this.train_against <= 0 || this.train_against === null || this.train_against === undefined) {
       $scope.train = true;
-      $scope.train_message = `Quantity to against Must be higher than 0`;
+      $scope.train_message = `Quantity to predict on Must be higher than 0`;
       $scope.train_values_set = false; 
-    } else if ($scope.train_on > $scope.amount){
+    } else if (this.train_on > this.amount){
       $scope.train = true;
       $scope.train_message = `Quantity to train on Must be lower than total quantity of ${$scope.amount}`;
       $scope.train_values_set = false; 
-    } else if ($scope.train_against > $scope.amount - $scope.train_on) {
+    } else if (this.train_against > this.amount - this.train_on) {
       $scope.train = true;
-      $scope.train_message = `Quantity to train against Must be lower than total quantity (${$scope.amount}) minus quantity to train on (${$scope.train_on}) ( hint: lower than ${$scope.amount - $scope.train_on} )`;
+      $scope.train_message = `Quantity to predict on Must be lower than total quantity (${$scope.amount}) minus quantity to train on (${this.train_on}) ( hint: lower than ${$scope.amount - this.train_on} )`;
       $scope.train_values_set = false;
     } else {
       $scope.train = false;

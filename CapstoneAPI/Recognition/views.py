@@ -43,8 +43,9 @@ def register_user(request):
     data = json.dumps({"token":token.key})
     return HttpResponse(data, content_type='application/json')
 
+
 @csrf_exempt
-def kmeans(request):
+def SVC(request):
     """
     This function allows user to run kmeans alogrithm on their dataset.
 
@@ -111,6 +112,75 @@ def kmeans(request):
     return HttpResponse(data, content_type='application/json')
 
 
+@csrf_exempt
+def kmeans(request):
+    """
+    This function allows user to run kmeans alogrithm on their dataset.
+
+    Arguments:
+        request (POST): Sends data from user's dataset to be analysed 
+        
+    Returns:     
+        return (dictionary): data from the results of running the algorithm
+    
+    Author:
+        Adam Myers
+
+    """
+    # decode the request body and show me whats in it
+    req_body = json.loads(request.body.decode())
+    # print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
+
+    # see if the is logged in (the hard way will refactor later for django way)
+    token = req_body['token']
+    try:
+        token = Token.objects.get(key=token)
+        user = User.objects.get(pk=token.user_id)
+    except Token.DoesNotExist:
+        data = json.dumps({"continue": False, "error": "User has not logged in."})
+        return HttpResponse(data, content_type='application/json')
+
+    # grab user's project
+    project = Project.objects.get(user=user, name=req_body['project'], algorithm=req_body['algorithm'])
+
+    # grab dataset from user's project
+    column_name = 'dataset'
+    datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
+    list_of_indexs = [each['index'] for each in req_body['ignored']]
+    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name)
+
+    # print("\n\nresults amount: {}\n".format(len(results['results'])))
+    # print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
+
+    start = int(req_body['train_on'])
+    stop = int(req_body['train_against'])
+    cluster_quantity = len(results['removed'])*3
+
+    train_on = results['results'][:start]
+    train_against = results['results'][-stop:]
+
+    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
+
+    pred = kmeans.predict(train_against)
+    prediction = list(int(each) for each in pred)
+    cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
+
+    labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
+    user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
+    prediction = relabel_prediction(prediction, user_labels)
+    relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
+    # kmeans.labels_
+    # kmeans.cluster_centers_
+
+    # print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
+    # print("\n\nprediction: {}\n".format(prediction))
+    # print("\n\naccuracy: {}\n".format(labels['accuracy']))
+
+    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
+    return HttpResponse(data, content_type='application/json')
+
+
+
 def relabel_accuracy(accuracy, user_labels):
     new_dict = dict()
     for ind, val in enumerate(accuracy):
@@ -120,7 +190,6 @@ def relabel_accuracy(accuracy, user_labels):
         # Used to generate the total per centroid of each answer starting with 0 for count on next loop
         for index, quantity in enumerate(accuracy[ind]):
             new_dict[ind]['total'] += accuracy[ind][quantity]
-            # print("\naccuracy index: {}\nuser_labels: {}\n".format(index, user_labels))
             for each in user_labels:
                 if each['value'] == quantity:
                     new_dict[ind][each['renamed']] = 0
@@ -260,7 +329,7 @@ def format_dataset(request):
     percentage = percentage_of_numbers(formated['sample_set'])
 
     if req_body['algorithm'] == 'Nearest Neighbor':
-        if percentage > 0.80:
+        if percentage > 0.75:
             pass
         else:
             go_on = False
@@ -269,10 +338,9 @@ def format_dataset(request):
 
     go_on = True
 
-    dicts_of_ignored_values = list(dicts_of_ignored_values)
     data = json.dumps({
         "sample_set":formated['sample_set'],
-        "indexs": formated['dicts_of_ignored_values'],
+        "indexs": formated['ignored_values'],
         "continue": go_on,
         "amount": formated['dataset_quantity'],
         "algorithm": req_body['algorithm']
@@ -296,7 +364,7 @@ def percentage_of_numbers(sample):
 
 def format_for_kmeans(list_of_data, user, new_project):
     reformated_list = list()
-    dicts_of_ignored_values = set()
+    ignored_values = set()
 
     dataset_quantity = 0
 
@@ -311,10 +379,12 @@ def format_for_kmeans(list_of_data, user, new_project):
                     append = False
                 else:
                     if value == '?':
-                        new_tuple = (index, "Question Mark")
+                        go_on = False
+                        data = json.dumps({"continue": go_on, "error": "Currently Not Accounting for '?' with Nearest Neighbor. Please Choose a different Dataset or Algorithm. We Apologize for the inconvienence."})
+                        return HttpResponse(data, content_type='application/json')
                     else:
                         new_tuple = (index, value)
-                    dicts_of_ignored_values.add(new_tuple)
+                    ignored_values.add(new_tuple)
 
         if append:
             dataset_quantity = dataset_quantity + 1
@@ -328,7 +398,7 @@ def format_for_kmeans(list_of_data, user, new_project):
         "sample_set": sample_set,
         "reformated_list": reformated_list,
         "dataset_quantity": dataset_quantity,
-        "dicts_of_ignored_values": dicts_of_ignored_values
+        "ignored_values": list(ignored_values)
     }
     return results
 
@@ -338,7 +408,7 @@ def format_for_kmeans(list_of_data, user, new_project):
 ####################### This is where you left off for creating svc routing ###########################
 def format_for_svc(list_of_data, user, new_project):
     reformated_list = list()
-    dicts_of_ignored_values = set()
+    preprocess_words = set()
 
     dataset_quantity = 0
 
@@ -352,11 +422,8 @@ def format_for_svc(list_of_data, user, new_project):
                 if len(value) == 0:
                     append = False
                 else:
-                    if value == '?':
-                        new_tuple = (index, "Question Mark")
-                    else:
-                        new_tuple = (index, value)
-                    dicts_of_ignored_values.add(new_tuple)
+                    new_list[index] = value
+                    preprocess_words.add(value)
 
         if append:
             dataset_quantity = dataset_quantity + 1
@@ -370,7 +437,7 @@ def format_for_svc(list_of_data, user, new_project):
         "sample_set": sample_set,
         "reformated_list": reformated_list,
         "dataset_quantity": dataset_quantity,
-        "dicts_of_ignored_values": dicts_of_ignored_values
+        "preprocess_words": preprocess_words
     }
     return results
 ####################### This is where you left off for creating svc routing ###########################
