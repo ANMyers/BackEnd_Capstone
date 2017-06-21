@@ -1,13 +1,16 @@
-from django.contrib.auth import logout, login, authenticate
-from django.contrib.auth.models import User, Group
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
 from rest_framework.authtoken.models import Token
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User, Group
+from django.contrib.auth import logout, login, authenticate
+from django.http import HttpResponse
 import json
+
 from Recognition.models import *
-from sklearn import preprocessing
 
 from sklearn.cluster import KMeans
+from sklearn.svm import SVC
+from sklearn import preprocessing
+
 import numpy as np
 
 # Create your views here.
@@ -47,7 +50,7 @@ def register_user(request):
 @csrf_exempt
 def SVC(request):
     """
-    This function allows user to run kmeans alogrithm on their dataset.
+    This function allows user to run SVC alogrithm on their dataset.
 
     Arguments:
         request (POST): Sends data from user's dataset to be analysed 
@@ -79,7 +82,11 @@ def SVC(request):
     column_name = 'dataset'
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
     list_of_indexs = [each['index'] for each in req_body['ignored']]
-    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name)
+
+############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
+############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
+############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
+    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm, predict_index=req_body['predict_index'])
 
     print("\n\nresults amount: {}\n".format(len(results['results'])))
     print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
@@ -91,24 +98,23 @@ def SVC(request):
     train_on = results['results'][:start]
     train_against = results['results'][-stop:]
 
-    kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
+    # svc = SVC(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
 
-    pred = kmeans.predict(train_against)
-    prediction = list(int(each) for each in pred)
-    cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
+    # pred = kmeans.predict(train_against)
+    # prediction = list(int(each) for each in pred)
+    # cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
 
-    labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
-    user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
-    prediction = relabel_prediction(prediction, user_labels)
-    relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
-    # kmeans.labels_
-    # kmeans.cluster_centers_
+    # labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
+    # user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
+    # prediction = relabel_prediction(prediction, user_labels)
+    # relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
 
-    print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
-    print("\n\nprediction: {}\n".format(prediction))
-    print("\n\naccuracy: {}\n".format(labels['accuracy']))
+    # print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
+    # print("\n\nprediction: {}\n".format(prediction))
+    # print("\n\naccuracy: {}\n".format(labels['accuracy']))
 
-    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
+    # data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
+    data = json.dumps({"results":"Under Construction"})
     return HttpResponse(data, content_type='application/json')
 
 
@@ -147,7 +153,7 @@ def kmeans(request):
     column_name = 'dataset'
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
     list_of_indexs = [each['index'] for each in req_body['ignored']]
-    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name)
+    results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm)
 
     # print("\n\nresults amount: {}\n".format(len(results['results'])))
     # print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
@@ -249,10 +255,11 @@ def label_centroids(clusters_indexs, original, possible_variables):
     return results
 
 
-def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
+def reformat_from_query(dataset, column_name, algorithm, indexs_to_remove=[], predict_index=[]):
 
     formated_list = list()
     indexs_removed = set()
+    y_list = list()
 
     for counter, one_set in enumerate(dataset):
         new_list = one_set[column_name].split(',')
@@ -261,21 +268,38 @@ def reformat_from_query(dataset, column_name, indexs_to_remove=[]):
             if i in indexs_to_remove:
                 del new_list[i]
             else:
-                try:
-                    new_list[i] = float(new_list[i])
-                except ValueError:
-                    if new_list[i] == '?':
-                        indexs_removed.add((i, "Question Mark"))
-                    else:
-                        indexs_removed.add((i, new_list[i]))
-                    del new_list[i]
+                if algorithm == 'Nearest Neighbor':
+                    try:
+                        new_list[i] = float(new_list[i])
+                    except ValueError:
+                        if new_list[i] == '?':
+                            indexs_removed.add((i, "Question Mark"))
+                        else:
+                            indexs_removed.add((i, new_list[i]))
+                        del new_list[i]
+
+                elif algorithm == 'Support Vector Classification':
+                    if i in predict_index:
+                        indexs_removed.add(("Begining", new_list[i]))
+                        del new_list[i]
+                    try:
+                        new_list[i] = float(new_list[i])
+                    except ValueError:
+                        y_list.append(new_list[i])
 
         formated_list.append(new_list)
 
-    results = {
-        "results": formated_list,
-        "removed": list(indexs_removed)
-    }
+    if algorithm == 'Nearest Neighbor':
+        results = {
+            "results": formated_list,
+            "removed": list(indexs_removed)
+        }
+    elif algorithm == 'Support Vector Classification':
+        results = {
+            "results": formated_list,
+            "removed": list(indexs_removed),
+            "y_list": y_list
+        }
     return results
 
 
@@ -324,8 +348,7 @@ def format_dataset(request):
     elif req_body['algorithm'] == 'Support Vector Classification':
         formated = format_for_svc(list_of_data, user, new_project)
 
-# This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
-# Once a tree structure algorithm is implemented site can allow a majority of words in their dataset but thats Recognition 2.0
+    # This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
     percentage = percentage_of_numbers(formated['sample_set'])
 
     if req_body['algorithm'] == 'Nearest Neighbor':
@@ -340,7 +363,7 @@ def format_dataset(request):
 
     data = json.dumps({
         "sample_set":formated['sample_set'],
-        "indexs": formated['ignored_values'],
+        "indexs": formated['preprocess_words'],
         "continue": go_on,
         "amount": formated['dataset_quantity'],
         "algorithm": req_body['algorithm']
@@ -437,7 +460,7 @@ def format_for_svc(list_of_data, user, new_project):
         "sample_set": sample_set,
         "reformated_list": reformated_list,
         "dataset_quantity": dataset_quantity,
-        "preprocess_words": preprocess_words
+        "preprocess_words": list(preprocess_words)
     }
     return results
 ####################### This is where you left off for creating svc routing ###########################
@@ -505,7 +528,7 @@ def my_project(request):
     column_name = 'dataset'
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
 
-    results = reformat_from_query(dataset=datasets, column_name=column_name)
+    results = reformat_from_query(dataset=datasets, column_name=column_name, algorithm=project.algorithm)
 
     data = json.dumps({"continue": True, "sample_set": results['results'][0], "indexs": results['removed'], "amount": len(results['results']), "project": project.name, "algorithm": project.algorithm})
     return HttpResponse(data, content_type='application/json')

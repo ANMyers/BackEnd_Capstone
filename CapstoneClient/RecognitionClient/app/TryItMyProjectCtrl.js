@@ -68,13 +68,14 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       "renamed": renamed_variables,
       "train_on": $scope.training.on,
       "train_against": $scope.training.against,
+      "predict_index": $scope.prediction.index,
       "token": RootFactory.getToken()
     }
     }).then(
       res => {
         console.log("Data: ", res.data);
-        TryItFactory.setresultsinfo(res.data);
-        $location.path('/Try_It/My_Results');
+        // TryItFactory.setresultsinfo(res.data);
+        // $location.path('/Try_It/My_Results');
       },
       err => {
         console.log("Error: ", err);
