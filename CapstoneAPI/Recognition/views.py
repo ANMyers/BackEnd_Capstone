@@ -90,6 +90,7 @@ def SVC(request):
 
     print("\n\nresults amount: {}\n".format(len(results['results'])))
     print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
+    print("\n\ny-list: {}\n".format(results['y_list']))
 
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
@@ -97,6 +98,7 @@ def SVC(request):
 
     train_on = results['results'][:start]
     train_against = results['results'][-stop:]
+
 
     # svc = SVC(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
 
@@ -135,7 +137,7 @@ def kmeans(request):
     """
     # decode the request body and show me whats in it
     req_body = json.loads(request.body.decode())
-    # print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
+    print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
 
     # see if the is logged in (the hard way will refactor later for django way)
     token = req_body['token']
@@ -283,6 +285,7 @@ def reformat_from_query(dataset, column_name, algorithm, indexs_to_remove=[], pr
                         indexs_removed.add(("Begining", new_list[i]))
                         del new_list[i]
                     try:
+                        print("list length: {}\ni value: {}".format(len(new_list), i))
                         new_list[i] = float(new_list[i])
                     except ValueError:
                         y_list.append(new_list[i])
@@ -349,26 +352,33 @@ def format_dataset(request):
         formated = format_for_svc(list_of_data, user, new_project)
 
     # This will be used to determine which algorithm will fit their dataset based off of amount of numbers per set.
+    go_on = True
     percentage = percentage_of_numbers(formated['sample_set'])
 
     if req_body['algorithm'] == 'Nearest Neighbor':
         if percentage > 0.75:
-            pass
+            data = json.dumps({
+                "sample_set":formated['sample_set'],
+                "indexs": formated['ignored_values'],
+                "continue": go_on,
+                "amount": formated['dataset_quantity'],
+                "algorithm": req_body['algorithm']
+            })
         else:
             go_on = False
             data = json.dumps({"continue": go_on, "error": "Please Choose another algorithm for this dataset."})
-            return HttpResponse(data, content_type='application/json')
 
-    go_on = True
+    elif req_body['algorithm'] == 'Support Vector Classification':
+        data = json.dumps({
+            "sample_set":formated['sample_set'],
+            "indexs": [],
+            "continue": go_on,
+            "amount": formated['dataset_quantity'],
+            "algorithm": req_body['algorithm']
+        })
 
-    data = json.dumps({
-        "sample_set":formated['sample_set'],
-        "indexs": formated['preprocess_words'],
-        "continue": go_on,
-        "amount": formated['dataset_quantity'],
-        "algorithm": req_body['algorithm']
-    })
     return HttpResponse(data, content_type='application/json')
+
 
 
 def percentage_of_numbers(sample):
@@ -386,7 +396,6 @@ def percentage_of_numbers(sample):
 
 
 def format_for_kmeans(list_of_data, user, new_project):
-    reformated_list = list()
     ignored_values = set()
 
     dataset_quantity = 0
@@ -419,7 +428,6 @@ def format_for_kmeans(list_of_data, user, new_project):
 
     results = {
         "sample_set": sample_set,
-        "reformated_list": reformated_list,
         "dataset_quantity": dataset_quantity,
         "ignored_values": list(ignored_values)
     }
@@ -430,7 +438,6 @@ def format_for_kmeans(list_of_data, user, new_project):
 ####################### This is where you left off for creating svc routing ###########################
 ####################### This is where you left off for creating svc routing ###########################
 def format_for_svc(list_of_data, user, new_project):
-    reformated_list = list()
     preprocess_words = set()
 
     dataset_quantity = 0
@@ -458,7 +465,6 @@ def format_for_svc(list_of_data, user, new_project):
 
     results = {
         "sample_set": sample_set,
-        "reformated_list": reformated_list,
         "dataset_quantity": dataset_quantity,
         "preprocess_words": list(preprocess_words)
     }

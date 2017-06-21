@@ -13,10 +13,10 @@
          <li><a ng-href="/">Home</a></li>
          <li><a ng-show="!loggedin" data-toggle="modal" data-target="#RegisterModal" href="">Register</a></li>
          <li><a ng-show="!loggedin" data-toggle="modal" data-target="#LoginModal" href="">Login</a></li>
-         <li><a ng-show="loggedin" ng-click="logout()" href="">Logout</a></li>
          <li><a ng-href="/#!/About">About</a></li>
          <li><a ng-show="loggedin" ng-href="/#!/My_Saved">My Saved</a></li>
          <li><a ng-href="/#!/Try_It">Try It!</a></li>
+         <li><a ng-show="loggedin" ng-click="logout()" href="">Logout</a></li>
         </ul>
       </div>
     </div>

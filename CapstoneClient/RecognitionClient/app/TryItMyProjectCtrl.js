@@ -3,6 +3,7 @@
 app.controller("MyProjectController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
   let data = TryItFactory.getsavedinfo();
+  console.log(data);
 
   let renamed_variables = [];
   $scope.excludes = [];
@@ -13,6 +14,11 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
   $scope.train_values_set = false;
   $scope.renamed = false;
   $scope.error = false;
+
+  if (data.algorithm == 'Support Vector Classification'){
+    $scope.index_needed = true;
+    $scope.prediction_index = [];
+  }
 
   if (data.length !== 0){
     $scope.data_loaded = true;
@@ -68,7 +74,7 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       "renamed": renamed_variables,
       "train_on": $scope.training.on,
       "train_against": $scope.training.against,
-      "predict_index": $scope.prediction.index,
+      "predict_index": $scope.prediction_index,
       "token": RootFactory.getToken()
     }
     }).then(
@@ -108,6 +114,16 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     };
     $scope.excludes.push(excluded);
     $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
+  };
+
+  $scope.variables_to_rename = function(exclude_me) {
+    console.log("variables to renamed was passed: ", exclude_me);
+    let variable_index = $scope.sample_set2.indexOf(exclude_me);
+    let variable = [ variable_index, $scope.sample_set2[variable_index] ];
+    $scope.variables.push(variable);
+    $scope.prediction_index.push(variable_index);
+    $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
+    $scope.index_needed = false;
   };
 
   $scope.rename_value = function(v1, index) {

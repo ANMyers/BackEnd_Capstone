@@ -32,6 +32,9 @@ app.controller("TryItController", function($scope, $http, $location, RootFactory
     },
     err => {
       console.log("Error: ", err);
+      $("#LoadingModal").modal("hide");
+      $scope.error = true;
+      $scope.error_message = "We're experiencing some difficulty... Please Try Again Later.";
     });
   };
 
