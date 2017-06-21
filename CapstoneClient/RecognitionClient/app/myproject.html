@@ -16,8 +16,8 @@
       <p><strong>Quantity of datasets available: ((amount))</strong><br><strong>Note: </strong>This is the amount of sets you have from what you uploaded in Step One.</p>
 
       <div class="col-sm-6">
-        <p><strong>Quantity</strong> to train on: <input type="number" ng-model="train_on" /> </p>
-        <p><strong>Quantity</strong> to predict on: <input type="number" ng-model="train_against" /> </p>
+        <label>Quantity to train on: </label><input type="number" name="train_on" ng-model="training.on"><br>
+        <label>Quantity to predict on: </label><input type="number" name="train_against" ng-model="training.against"><br>
         <div class="row alert alert-danger" ng-show="train">
           <p ng-model="error">((train_message))</p>
         </div>
