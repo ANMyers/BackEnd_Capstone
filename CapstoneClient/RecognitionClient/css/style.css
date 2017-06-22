@@ -1,0 +1,36 @@
+.dark-text {
+    color: black;
+}
+
+.white-text {
+    color: white;
+}
+
+.blue-text {
+    color: darkblue;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.about {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 25px;
+}
+
+img {
+    border-radius: 25px;
+}
+
+.spacingLR {
+    width: 50px;
+}
+
+.image {
+    width: 23vw;
+}
+
+body {
+    background-image: url("../images/background.jpg");
+}

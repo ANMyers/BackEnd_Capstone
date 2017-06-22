@@ -64,7 +64,6 @@ def SVC(request):
     """
     # decode the request body and show me whats in it
     req_body = json.loads(request.body.decode())
-    print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
 
     # see if the is logged in (the hard way will refactor later)
     token = req_body['token']
@@ -100,7 +99,7 @@ def SVC(request):
     supveccla = Support_Vector_Classification()
 
     try:
-        supveccla.fit(preproc_train_on['processed'], preproc_train_y['processed'])
+        supveccla.fit(preproc_train_on['processed'], preproc_train_y['processed'].ravel())
     except ValueError:
         labels = np.unique(preproc_train_y['processed'])
         print("\nlabels?: {}\n".format(labels))
@@ -112,11 +111,27 @@ def SVC(request):
     sep_clusters = seperate_clusters(supveccla.support_, cluster_amount)
     percent = calculate_percent(sep_clusters)
 
-    print("\namount: {}\n".format(percent))
+    rename_y(pred, preproc_train_y['index_labels'])
+    percent = rename_percent(percent, preproc_train_y['index_labels'])
 
-    # data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
     data = json.dumps({"results": list(pred), "project": req_body['project'], "accuracy": percent,"cluster_amount": int(cluster_amount),  "project": req_body['project'], "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
+
+
+def rename_percent(accuracy, index_labels):
+    new_dict = dict()
+
+    for key, value in enumerate(accuracy):
+        new_dict[index_labels[0][key]] = accuracy[key]
+
+    return new_dict
+
+
+def rename_y(prediction, index_labels):
+    for count, each in enumerate(prediction):
+        prediction[count] = index_labels[0][int(each)]
+
+
 
 def calculate_percent(cluster_dict):
     keys = cluster_dict.keys()
@@ -175,7 +190,6 @@ def preprocess_svc_data(train_data):
     return results
 
 
-
 @csrf_exempt
 def kmeans(request):
     """
@@ -193,7 +207,6 @@ def kmeans(request):
     """
     # decode the request body and show me whats in it
     req_body = json.loads(request.body.decode())
-    print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
 
     # see if the is logged in (the hard way will refactor later for django way)
     token = req_body['token']
@@ -491,10 +504,6 @@ def format_for_kmeans(list_of_data, user, new_project):
     }
     return results
 
-
-####################### This is where you left off for creating svc routing ###########################
-####################### This is where you left off for creating svc routing ###########################
-####################### This is where you left off for creating svc routing ###########################
 def format_for_svc(list_of_data, user, new_project):
     preprocess_words = set()
 
@@ -527,9 +536,6 @@ def format_for_svc(list_of_data, user, new_project):
         "preprocess_words": list(preprocess_words)
     }
     return results
-####################### This is where you left off for creating svc routing ###########################
-####################### This is where you left off for creating svc routing ###########################
-####################### This is where you left off for creating svc routing ###########################
 
 
 @csrf_exempt
@@ -577,7 +583,6 @@ def delete_project(request):
 def my_project(request):
 
     req_body = json.loads(request.body.decode())
-    print("\n\n\nreq_body?: {}\n\n".format(req_body))
 
     try:
         token = Token.objects.get(key=req_body['token'])

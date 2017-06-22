@@ -4,11 +4,9 @@ app.controller("MyResultsController", function($scope, $http, RootFactory, apiUr
 
     let data = TryItFactory.getresultsinfo();
     $scope.SelectedAlgo = data.algorithm;
-    console.log($scope.SelectedAlgo);
     $scope.display = [];
     $scope.cluster_amount = data.cluster_amount;
     $scope.prediction = [];
-    console.log("data after results controller", data);
 
     if (data.algorithm == "Nearest Neighbor"){
         for (let key in data.accuracy) {
@@ -23,10 +21,9 @@ app.controller("MyResultsController", function($scope, $http, RootFactory, apiUr
     } else if (data.algorithm == "Support Vector Classification") {
         for (let key in data.accuracy) {
             let display = [];
-            display.push(key);
+            display.push(key+1);
             display.push(data.accuracy[key]);
             $scope.display.push(display);
-            console.log("SVC??", $scope.display);
         }
     }
 
