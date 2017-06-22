@@ -3,19 +3,39 @@
 app.controller("MyProjectController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
   let data = TryItFactory.getsavedinfo();
-  $scope.SelectedAlgo = data.algorithm;
-  $scope.variables = data.indexs;
-  $scope.sample_set = data.sample_set;
-  $scope.sample_set2 = data.sample_set.slice(0);
-  $scope.amount = data.amount;
-
-  $scope.excludes = [];
-  $scope.error = false;
-  $scope.renamed = false;
-  $scope.renamed_each = {};
-  $scope.train_values_set = false;
+  console.log(data);
 
   let renamed_variables = [];
+  $scope.excludes = [];
+
+  $scope.renamed_each = {};
+  $scope.training = {};
+
+  $scope.train_values_set = false;
+  $scope.renamed = false;
+  $scope.error = false;
+
+  if (data.algorithm == 'Support Vector Classification'){
+    $scope.index_needed = true;
+    $scope.prediction_index = [];
+  }
+
+  if (data.length !== 0){
+    $scope.data_loaded = true;
+    $scope.SelectedAlgo = data.algorithm;
+    if (data.algorithm == 'Support Vector Classification'){
+      $scope.variables = [];
+    } else {
+      $scope.variables = data.indexs;
+    }
+    $scope.sample_set = data.sample_set;
+    $scope.sample_set2 = data.sample_set.slice(0);
+    $scope.amount = data.amount;
+  } else {
+    $scope.data_loaded = false;
+    $scope.error = true;
+    $scope.error_message = "You don't have any data to load... sorry :(";
+  }
 
   let run_kmeans = function() {
     $http({
@@ -29,8 +49,8 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       "project": data.project,
       "ignored": $scope.excludes,
       "renamed": renamed_variables,
-      "train_on": $scope.train_on,
-      "train_against": $scope.train_against,
+      "train_on": $scope.training.on,
+      "train_against": $scope.training.against,
       "token": RootFactory.getToken()
     }
     }).then(
@@ -38,6 +58,39 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
         console.log("Data: ", res.data);
         TryItFactory.setresultsinfo(res.data);
         $location.path('/Try_It/My_Results');
+      },
+      err => {
+        console.log("Error: ", err);
+      });
+  };
+
+  let run_SVC = function() {
+    $http({
+    url: `${apiUrl}/SVC/`,
+    method: "POST",
+    headers: {
+      'Authorization': "Token " + RootFactory.getToken()
+    },
+    data: {
+      "algorithm": data.algorithm,
+      "project": data.project,
+      "ignored": $scope.excludes,
+      "renamed": renamed_variables,
+      "train_on": $scope.training.on,
+      "train_against": $scope.training.against,
+      "predict_index": $scope.prediction_index,
+      "token": RootFactory.getToken()
+    }
+    }).then(
+      res => {
+        console.log("Data: ", res.data);
+        if (res.data.error) {
+          $scope.error = true;
+          $scope.error_message = res.data.error_message;
+        } else {
+          TryItFactory.setresultsinfo(res.data);
+          $location.path('/Try_It/My_Results');
+        }
       },
       err => {
         console.log("Error: ", err);
@@ -56,6 +109,8 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       $scope.error = false;
       if ($scope.SelectedAlgo == 'Nearest Neighbor') {
         run_kmeans();
+      } else if ($scope.SelectedAlgo == 'Support Vector Classification') {
+        run_SVC();
       }
     }
   };
@@ -68,6 +123,19 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     };
     $scope.excludes.push(excluded);
     $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
+  };
+
+  $scope.variables_to_rename = function(exclude_me) {
+    console.log("variables to renamed was passed: ", exclude_me);
+    let variable_index = $scope.sample_set2.indexOf(exclude_me);
+    let variable = [ variable_index, $scope.sample_set2[variable_index] ];
+    $scope.variables.push(variable);
+    $scope.prediction_index.push(variable_index);
+    $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
+    $scope.index_needed = false;
+    if ($scope.SelectedAlgo == 'Support Vector Classification'){
+      $scope.renamed = true;
+    }
   };
 
   $scope.rename_value = function(v1, index) {
@@ -117,21 +185,21 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
   };
 
   $scope.save_training = function() {
-    if ($scope.train_on <= 0 || $scope.train_on === null || $scope.train_on === undefined) {
+    if ($scope.training.on <= 0 || $scope.training.on === null || $scope.training.on === undefined) {
       $scope.train = true;
       $scope.train_message = `Quantity to train on Must be higher than 0`; 
       $scope.train_values_set = false;
-    } else if ($scope.train_against <= 0 || $scope.train_against === null || $scope.train_against === undefined) {
+    } else if ($scope.training.against <= 0 || $scope.training.against === null || $scope.training.against === undefined) {
       $scope.train = true;
-      $scope.train_message = `Quantity to against Must be higher than 0`;
+      $scope.train_message = `Quantity to predict on Must be higher than 0`;
       $scope.train_values_set = false; 
-    } else if ($scope.train_on > $scope.amount){
+    } else if ($scope.training.on > $scope.amount){
       $scope.train = true;
       $scope.train_message = `Quantity to train on Must be lower than total quantity of ${$scope.amount}`;
       $scope.train_values_set = false; 
-    } else if ($scope.train_against > $scope.amount - $scope.train_on) {
+    } else if ($scope.training.against > $scope.amount - $scope.training.on) {
       $scope.train = true;
-      $scope.train_message = `Quantity to train against Must be lower than total quantity (${$scope.amount}) minus quantity to train on (${$scope.train_on}) ( hint: lower than ${$scope.amount - $scope.train_on} )`;
+      $scope.train_message = `Quantity to predict on Must be lower than total quantity (${$scope.amount}) minus quantity to train on (${$scope.training.on}) ( hint: lower than ${$scope.amount - $scope.training.on} )`;
       $scope.train_values_set = false;
     } else {
       $scope.train = false;

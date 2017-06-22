@@ -1,14 +1,16 @@
-<div class="container">
+<div class="container" ng-if="data_loaded">
   <div class="row">
       <h1>Step Two</h1>
       <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
 
       <div class="col-sm-5 well" style="height:625px; overflow-y:scroll; margin-right:40px">
       <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable</p>
+      <p ng-if=" SelectedAlgo == 'Support Vector Classification' ">or the <span class="glyphicon glyphicon-zoom-in"></span> to rename that variable to establish clusters</p>
         <table>
           <tr ng-repeat="sample in sample_set track by $index">
             <td>((sample))</td>
             <td><a href="" class="glyphicon glyphicon-remove" ng-click="variables_to_exclude( ((sample)) )"></a></td>
+            <td ng-if="index_needed"><button class="glyphicon glyphicon-zoom-in" ng-click="variables_to_rename( ((sample)) )"></button></td>
           </tr>
         </table><br>
       </div>
@@ -16,8 +18,8 @@
       <p><strong>Quantity of datasets available: ((amount))</strong><br><strong>Note: </strong>This is the amount of sets you have from what you uploaded in Step One.</p>
 
       <div class="col-sm-6">
-        <p><strong>Quantity</strong> to train on: <input type="number" ng-model="train_on"></p>
-        <p><strong>Quantity</strong> to train against: <input type="number" ng-model="train_against"> </p>
+        <label>Quantity to train on: </label><input type="number" name="train_on" ng-model="training.on"><br>
+        <label>Quantity to predict on: </label><input type="number" name="train_against" ng-model="training.against"><br>
         <div class="row alert alert-danger" ng-show="train">
           <p ng-model="error">((train_message))</p>
         </div>
@@ -25,13 +27,14 @@
         <span ng-show="train_values_set" class="glyphicon glyphicon-ok"></span>
       </div>
 
-      <p><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
+      <p ng-if=" SelectedAlgo != 'Support Vector Classification' "><strong>Variables to name: </strong><br><strong>Note: </strong>Please be sure to give all variables below names for human readability.</p>
+      <p ng-if=" SelectedAlgo == 'Support Vector Classification' "><strong>Variables to predict on: </strong><br><strong>Note: </strong>Please be sure this is the variable you want to predict on.</p>
 
       <div class="col-sm-6 well" style="height:150px; overflow-y:scroll;">
         <div ng-repeat="var in variables track by $index">
           <p>Index of: ((var[0]))  Value of: ((var[1]))</p>
-          <input type="text" id="(($index))" accept=".txt" />
-          <button class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)), (($index)) )">Rename</button><span ng-show="check(($index))" class="glyphicon glyphicon-ok"></span>
+          <input ng-if=" SelectedAlgo != 'Support Vector Classification' " type="text" id="(($index))" accept=".txt" />
+          <button ng-if=" SelectedAlgo != 'Support Vector Classification' " class="btn btn-secondary btn-sm" ng-click="rename_value( ((var)), (($index)) )">Rename</button><span ng-show="check(($index))" class="glyphicon glyphicon-ok"></span>
         </div>
       </div>
 
@@ -46,7 +49,7 @@
         <button class="btn btn-primary" ng-click="step_3()">Run Algorithm</button>
       </div>
     </div>
+</div>
     <div class="row alert alert-danger" ng-show="error">
         <p ng-model="error">((error_message))</p>
     </div>
-</div>

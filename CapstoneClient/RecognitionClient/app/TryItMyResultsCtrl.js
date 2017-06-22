@@ -3,18 +3,30 @@
 app.controller("MyResultsController", function($scope, $http, RootFactory, apiUrl, TryItFactory, $location) {
 
     let data = TryItFactory.getresultsinfo();
+    $scope.SelectedAlgo = data.algorithm;
+    console.log($scope.SelectedAlgo);
     $scope.display = [];
     $scope.cluster_amount = data.cluster_amount;
     $scope.prediction = [];
     console.log("data after results controller", data);
 
-    for (let key in data.accuracy) {
-        for (let name in data.accuracy[key]) {
+    if (data.algorithm == "Nearest Neighbor"){
+        for (let key in data.accuracy) {
+            for (let name in data.accuracy[key]) {
+                let display = [];
+                display.push(name); 
+                display.push(data.accuracy[key][name]);
+                display.push(data.centroids[key]); 
+                $scope.display.push(display);
+            }
+        }
+    } else if (data.algorithm == "Support Vector Classification") {
+        for (let key in data.accuracy) {
             let display = [];
-            display.push(name); 
-            display.push(data.accuracy[key][name]);
-            display.push(data.centroids[key]); 
+            display.push(key);
+            display.push(data.accuracy[key]);
             $scope.display.push(display);
+            console.log("SVC??", $scope.display);
         }
     }
 
