@@ -4,7 +4,8 @@
       <p>Choose the data for <strong>((SelectedAlgo))</strong> to ignore. Below is an example of one of your datasets.</p>
 
       <div class="col-sm-5 well" style="height:625px; overflow-y:scroll; margin-right:40px">
-      <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable<br> or the <span class="glyphicon glyphicon-zoom-in"></span> to rename that variable to establish clusters</p>
+      <p><strong>One Set of Your Data:</strong><br><strong>Note: </strong>click on the <span class="glyphicon glyphicon-remove"></span> to exclude that variable</p>
+      <p ng-if=" SelectedAlgo == 'Support Vector Classification' ">or the <span class="glyphicon glyphicon-zoom-in"></span> to rename that variable to establish clusters</p>
         <table>
           <tr ng-repeat="sample in sample_set track by $index">
             <td>((sample))</td>

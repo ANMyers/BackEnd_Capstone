@@ -66,7 +66,7 @@ def SVC(request):
     req_body = json.loads(request.body.decode())
     print("\n\n-------below was sent in request-------\n{}\n".format(req_body))
 
-    # see if the is logged in (the hard way will refactor later for django way)
+    # see if the is logged in (the hard way will refactor later)
     token = req_body['token']
     try:
         token = Token.objects.get(key=token)
@@ -83,28 +83,32 @@ def SVC(request):
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
     list_of_indexs = [each['index'] for each in req_body['ignored']]
 
-############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
-############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
-############################### NEED PREDICT INDEX FOR FUNCTION BELOW ########################
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm, predict_index=req_body['predict_index'])
 
-    print("\n\nresults amount: {}\n".format(len(results['results'])))
-    print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
-    print("\n\ny-list: {}\n".format(results['y_list']))
+
+    # print("\n\nresults amount: {}\n".format(len(results['results'])))
+    # print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
+    # print("\n\ny-list length: {}\n".format(len(results['y_list'])))
 
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
-    cluster_quantity = len(results['removed'])*3
 
     train_on = results['results'][:start]
+    train_on_y = results['y_list'][:start]
+
     train_against = results['results'][-stop:]
 
+    preproc_train_on = preprocess_svc_data(train_on)
+    preproc_train_y = preprocess_svc_data(train_on_y)
+    preproc_train_against = preprocess_svc_data(train_against)
 
-    # svc = SVC(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
+    svc = SVC()
+    svc.fit(preproc_train_on['processed'], preproc_train_y['processed'])
 
-    # pred = kmeans.predict(train_against)
+    pred = svc.predict(preproc_train_against['processed'])
+
     # prediction = list(int(each) for each in pred)
-    # cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
+    # cluster_indexs = {i: np.where(svc.labels_ == i)[0] for i in range(svc.n_clusters)}
 
     # labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
     # user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
@@ -118,6 +122,31 @@ def SVC(request):
     # data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
     data = json.dumps({"results":"Under Construction"})
     return HttpResponse(data, content_type='application/json')
+
+
+def preprocess_svc_data(train_data):
+    index_labels = dict()
+    indexes_to_preprocess = list()
+    one_row = train_data[0]
+
+    for i in range(0, len(one_row)):
+        try:
+            float(one_row[i])
+        except ValueError:
+            indexes_to_preprocess.append(i)
+
+    for index in indexes_to_preprocess:
+        le = preprocessing.LabelEncoder()
+        le.fit(set(train_data[:,index]))
+        index_labels[index] = list(le.classes_)
+        train_data[:,index] = le.transform(train_data[:,index])
+
+    results = {
+        "index_labels": index_labels,
+        "processed": train_data
+    }
+    return results
+
 
 
 @csrf_exempt
@@ -157,9 +186,6 @@ def kmeans(request):
     list_of_indexs = [each['index'] for each in req_body['ignored']]
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm)
 
-    # print("\n\nresults amount: {}\n".format(len(results['results'])))
-    # print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
-
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
     cluster_quantity = len(results['removed'])*3
@@ -177,12 +203,6 @@ def kmeans(request):
     user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
     prediction = relabel_prediction(prediction, user_labels)
     relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
-    # kmeans.labels_
-    # kmeans.cluster_centers_
-
-    # print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
-    # print("\n\nprediction: {}\n".format(prediction))
-    # print("\n\naccuracy: {}\n".format(labels['accuracy']))
 
     data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
     return HttpResponse(data, content_type='application/json')
@@ -208,9 +228,9 @@ def relabel_accuracy(accuracy, user_labels):
                 if quantity == each['value']:
                     new_dict[ind][each['renamed']] = round((int(accuracy[ind][quantity]) / int(new_dict[ind]['total'])* 100), 2)
 
-    print("\nresults: {}\n".format(new_dict))
+    # print("\nresults: {}\n".format(new_dict))
     return new_dict
-            
+
 
 
 def relabel_prediction(prediction, user_labels):
@@ -261,11 +281,17 @@ def reformat_from_query(dataset, column_name, algorithm, indexs_to_remove=[], pr
 
     formated_list = list()
     indexs_removed = set()
-    y_list = list()
+
+    if algorithm == 'Support Vector Classification':
+        y_list = list()
 
     for counter, one_set in enumerate(dataset):
         new_list = one_set[column_name].split(',')
         start = len(new_list) - 1
+
+        if algorithm == 'Support Vector Classification':
+            new_y_list = list()
+
         for i in range(start, -1, -1):
             if i in indexs_to_remove:
                 del new_list[i]
@@ -282,13 +308,16 @@ def reformat_from_query(dataset, column_name, algorithm, indexs_to_remove=[], pr
 
                 elif algorithm == 'Support Vector Classification':
                     if i in predict_index:
-                        indexs_removed.add(("Begining", new_list[i]))
+                        new_y_list.append(new_list[i])
                         del new_list[i]
-                    try:
-                        print("list length: {}\ni value: {}".format(len(new_list), i))
-                        new_list[i] = float(new_list[i])
-                    except ValueError:
-                        y_list.append(new_list[i])
+                    else:
+                        try:
+                            new_list[i] = float(new_list[i])
+                        except ValueError:
+                            pass
+
+        if algorithm == 'Support Vector Classification':
+            y_list.append(new_y_list)
 
         formated_list.append(new_list)
 
@@ -300,7 +329,6 @@ def reformat_from_query(dataset, column_name, algorithm, indexs_to_remove=[], pr
     elif algorithm == 'Support Vector Classification':
         results = {
             "results": formated_list,
-            "removed": list(indexs_removed),
             "y_list": y_list
         }
     return results
@@ -362,19 +390,22 @@ def format_dataset(request):
                 "indexs": formated['ignored_values'],
                 "continue": go_on,
                 "amount": formated['dataset_quantity'],
-                "algorithm": req_body['algorithm']
+                "algorithm": req_body['algorithm'],
+                "project": req_body['project']
             })
         else:
             go_on = False
             data = json.dumps({"continue": go_on, "error": "Please Choose another algorithm for this dataset."})
 
     elif req_body['algorithm'] == 'Support Vector Classification':
+
         data = json.dumps({
             "sample_set":formated['sample_set'],
             "indexs": [],
             "continue": go_on,
             "amount": formated['dataset_quantity'],
-            "algorithm": req_body['algorithm']
+            "algorithm": req_body['algorithm'],
+            "project": req_body['project']
         })
 
     return HttpResponse(data, content_type='application/json')
