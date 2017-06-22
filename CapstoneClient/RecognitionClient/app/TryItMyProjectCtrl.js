@@ -23,7 +23,11 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
   if (data.length !== 0){
     $scope.data_loaded = true;
     $scope.SelectedAlgo = data.algorithm;
-    $scope.variables = data.indexs;
+    if (data.algorithm == 'Support Vector Classification'){
+      $scope.variables = [];
+    } else {
+      $scope.variables = data.indexs;
+    }
     $scope.sample_set = data.sample_set;
     $scope.sample_set2 = data.sample_set.slice(0);
     $scope.amount = data.amount;
@@ -80,8 +84,13 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     }).then(
       res => {
         console.log("Data: ", res.data);
-        // TryItFactory.setresultsinfo(res.data);
-        // $location.path('/Try_It/My_Results');
+        if (res.data.error) {
+          $scope.error = true;
+          $scope.error_message = res.data.error_message;
+        } else {
+          TryItFactory.setresultsinfo(res.data);
+          $location.path('/Try_It/My_Results');
+        }
       },
       err => {
         console.log("Error: ", err);
@@ -124,6 +133,9 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
     $scope.prediction_index.push(variable_index);
     $scope.sample_set.splice($scope.sample_set.indexOf(exclude_me), 1);
     $scope.index_needed = false;
+    if ($scope.SelectedAlgo == 'Support Vector Classification'){
+      $scope.renamed = true;
+    }
   };
 
   $scope.rename_value = function(v1, index) {

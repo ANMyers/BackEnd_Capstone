@@ -8,7 +8,7 @@ import json
 from Recognition.models import *
 
 from sklearn.cluster import KMeans
-from sklearn.svm import SVC
+from sklearn.svm import SVC as Support_Vector_Classification
 from sklearn import preprocessing
 
 import numpy as np
@@ -85,11 +85,6 @@ def SVC(request):
 
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm, predict_index=req_body['predict_index'])
 
-
-    # print("\n\nresults amount: {}\n".format(len(results['results'])))
-    # print("\n\none row: {}\nremoved: {}\n".format(results['results'][0], results['removed']))
-    # print("\n\ny-list length: {}\n".format(len(results['y_list'])))
-
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
 
@@ -102,42 +97,74 @@ def SVC(request):
     preproc_train_y = preprocess_svc_data(train_on_y)
     preproc_train_against = preprocess_svc_data(train_against)
 
-    svc = SVC()
-    svc.fit(preproc_train_on['processed'], preproc_train_y['processed'])
+    supveccla = Support_Vector_Classification()
 
-    pred = svc.predict(preproc_train_against['processed'])
+    try:
+        supveccla.fit(preproc_train_on['processed'], preproc_train_y['processed'])
+    except ValueError:
+        labels = np.unique(preproc_train_y['processed'])
+        print("\nlabels?: {}\n".format(labels))
+        data = json.dumps({"error": True, "error_message": "The dataset you sent only has 1 predicted outcome. Please send more data to get a better result."})
+        return HttpResponse(data, content_type='application/json')
 
-    # prediction = list(int(each) for each in pred)
-    # cluster_indexs = {i: np.where(svc.labels_ == i)[0] for i in range(svc.n_clusters)}
+    cluster_amount = len(supveccla.n_support_)
+    pred = supveccla.predict(preproc_train_against['processed'])
+    sep_clusters = seperate_clusters(supveccla.support_, cluster_amount)
+    percent = calculate_percent(sep_clusters)
 
-    # labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
-    # user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
-    # prediction = relabel_prediction(prediction, user_labels)
-    # relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
-
-    # print("\n\ntrain_on length: {}\ntrain_against length: {}\n".format(len(train_on), len(train_against)))
-    # print("\n\nprediction: {}\n".format(prediction))
-    # print("\n\naccuracy: {}\n".format(labels['accuracy']))
+    print("\namount: {}\n".format(percent))
 
     # data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
-    data = json.dumps({"results":"Under Construction"})
+    data = json.dumps({"results": list(pred), "project": req_body['project'], "accuracy": percent,"cluster_amount": int(cluster_amount),  "project": req_body['project'], "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
+
+def calculate_percent(cluster_dict):
+    keys = cluster_dict.keys()
+    total = 0
+
+    for key in keys:
+        total = total + len(cluster_dict[key])
+    for key in keys:
+        divided = len(cluster_dict[key]) / total
+        cluster_dict[key] = round(divided * 100, 2)
+
+    return cluster_dict
+
+
+def seperate_clusters(cluster_index, number_of_clusters):
+    counter = 0
+    cluster_dict = dict()
+    for i in range(0, len(cluster_index)):
+        if i < len(cluster_index)-1:
+            if cluster_index[i] < cluster_index[i+1]:
+                try:
+                    cluster_dict[counter].append(cluster_index[i])
+                except KeyError:
+                    cluster_dict[counter] = list()
+                    cluster_dict[counter].append(cluster_index[i])
+            else:
+                cluster_dict[counter].append(cluster_index[i])
+                counter += 1
+
+    return cluster_dict
 
 
 def preprocess_svc_data(train_data):
+    train_data = np.array(train_data)
     index_labels = dict()
-    indexes_to_preprocess = list()
-    one_row = train_data[0]
+    indexes_to_preprocess = set()
 
-    for i in range(0, len(one_row)):
-        try:
-            float(one_row[i])
-        except ValueError:
-            indexes_to_preprocess.append(i)
+    for p in range(0, len(train_data)):
+        one_row = train_data[p]
+        for i in range(0, len(one_row)):
+            try:
+                float(one_row[i])
+            except ValueError:
+                indexes_to_preprocess.add(i)
 
     for index in indexes_to_preprocess:
         le = preprocessing.LabelEncoder()
-        le.fit(set(train_data[:,index]))
+        le.fit(train_data[:,index])
         index_labels[index] = list(le.classes_)
         train_data[:,index] = le.transform(train_data[:,index])
 
@@ -204,7 +231,7 @@ def kmeans(request):
     prediction = relabel_prediction(prediction, user_labels)
     relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
 
-    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity})
+    data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity, "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
 
 
@@ -567,5 +594,10 @@ def my_project(request):
 
     results = reformat_from_query(dataset=datasets, column_name=column_name, algorithm=project.algorithm)
 
-    data = json.dumps({"continue": True, "sample_set": results['results'][0], "indexs": results['removed'], "amount": len(results['results']), "project": project.name, "algorithm": project.algorithm})
+    if project.algorithm == 'Nearest Neighbor':
+        data = json.dumps({"continue": True, "sample_set": results['results'][0], "indexs": results['removed'], "amount": len(results['results']), "project": project.name, "algorithm": project.algorithm})
+
+    elif project.algorithm == 'Support Vector Classification':
+        data = json.dumps({"continue": True, "sample_set": results['results'][0], "amount": len(results['results']), "project": project.name, "algorithm": project.algorithm})
+
     return HttpResponse(data, content_type='application/json')
