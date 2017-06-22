@@ -47,7 +47,19 @@ python manage.py runserver
 Now you have the backend built and running. Time for the frontend.
 
 # Installing FrontEnd
-Still under construction but I will have instructions here shortly :).
+From CapstoneClient/ directory
+```
+cd CapstoneClient
+```
+go ahead and npm install those packages
+```npm install```
+
+from there you can go ahead and run your httpserver
+```
+http-server
+```
+
+route to http://localhost:8080/ and you should be set. Enjoy :)
 
 
 ## Built With
