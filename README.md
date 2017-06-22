@@ -17,8 +17,7 @@ registering. If you want information about the implemented algorithms or what fo
    From here you can go to About page by clicking on the link in the top right which will bring you to a page looking like this:
 ![image](https://user-images.githubusercontent.com/24867879/27454685-656db3ce-5760-11e7-85a4-fbaaee073e56.png)
 
-   This page has a 'How It Works' section for explaining how to operate the site from there you can Register a new user from the link in the top right of 'Register' which will show:
-![image](https://user-images.githubusercontent.com/24867879/27454749-9f03475c-5760-11e7-9034-b5f80302a908.png)
+   This page has a 'How It Works' section for explaining how to operate the site from there you can Register a new user from the link in the top right of 'Register'.
 
    Once Registered now you can build a project, click on 'Try It' to get started:
 ![image](https://user-images.githubusercontent.com/24867879/27454809-def7c248-5760-11e7-86f9-9eccd976a826.png)
