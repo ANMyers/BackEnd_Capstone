@@ -10,6 +10,28 @@ lifetime I've come across names of different algorithms that I had no idea how t
    All a user visiting the site needs to do is first create an account by
 registering. If you want information about the implemented algorithms or what format is available to upload visit the 'About' page. Once you have a grasp on the operation of the site click on 'Try It' page. You will be shown a method to name a new project, select an algorithm, upload your .txt file that contains your dataset, then click 'Continue'. Once your dataset has loaded you will be shown a view to remove variables you don't want to include and rename ones that will be the foundation for the algorithm later. You will also need to select how many sets to train on and how many to predict on (train against). Once everything is set click 'Run Algorithm'. The next view will display the results of the operation and show you predictions on what you selected to train against. You will then be allowed to go back and change things up for another go. Have fun!
 
+# What To Expect
+   First and formost the splash page should look like this:
+![image](https://user-images.githubusercontent.com/24867879/27454642-3b6abfcc-5760-11e7-9e88-725178a2576b.png)
+
+   From here you can go to About page by clicking on the link in the top right which will bring you to a page looking like this:
+![image](https://user-images.githubusercontent.com/24867879/27454685-656db3ce-5760-11e7-85a4-fbaaee073e56.png)
+
+   This page has a 'How It Works' section for explaining how to operate the site from there you can Register a new user from the link in the top right of 'Register' which will show:
+![image](https://user-images.githubusercontent.com/24867879/27454749-9f03475c-5760-11e7-9034-b5f80302a908.png)
+
+   Once Registered now you can build a project, click on 'Try It' to get started:
+![image](https://user-images.githubusercontent.com/24867879/27454809-def7c248-5760-11e7-86f9-9eccd976a826.png)
+
+   Fill out a project name, select an algorithm, upload a dataset (.txt file only), from there you can click 'Continue to step 2':
+![image](https://user-images.githubusercontent.com/24867879/27454875-0edb8a76-5761-11e7-987e-8c7bcaa2511f.png)
+
+   And the fun begins, here is your area to tinker, choose what you would like to train on and predict on, select variables to exclude and name the ones provided (for SVC you need to select an variable to predict on). Once you're all set click 'Run Algorithm':
+![image](https://user-images.githubusercontent.com/24867879/27454951-548015f6-5761-11e7-9edb-9104549f243a.png)
+
+   Now you get your results! Happy Tinkering!
+
+
 # Installing BackEnd
    If you so fancy to download or clone this site here is what you will need 
 to make sure you have installed for the backend:
