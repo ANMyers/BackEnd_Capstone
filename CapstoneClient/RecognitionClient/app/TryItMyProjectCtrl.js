@@ -103,8 +103,13 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       $scope.error = true;
       $scope.error_message = "Please Set the Values you want to train on and train against.";
     } else if ($scope.renamed === false) {
-      $scope.error = true;
-      $scope.error_message = "Please Rename all variables listed on the right and remember to exclude any variables you don't need.";
+      if (data.algorithm == 'Support Vector Classification'){
+        $scope.error = true;
+        $scope.error_message = "Please Select An Index to Predict On.";
+      } else {
+        $scope.error = true;
+        $scope.error_message = "Please Rename all variables listed on the right and remember to exclude any variables you don't need.";
+      }
     } else {
       $scope.error = false;
       if ($scope.SelectedAlgo == 'Nearest Neighbor') {

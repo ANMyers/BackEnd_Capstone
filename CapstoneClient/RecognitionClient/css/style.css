@@ -1,0 +1,62 @@
+.dark-text {
+    color: black;
+}
+
+.white-text {
+    color: white;
+}
+
+.light-blue-text {
+    color: lightskyblue;
+}
+
+.blue-text {
+    color: darkblue;
+}
+
+.spacer {
+    height: 300px;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.about {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 25px;
+}
+
+.home {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 25px;
+    color: snow;
+    width: 102vw;
+    margin-top: -10px;
+}
+
+img {
+    border-radius: 25px;
+}
+
+.spacingLR {
+    width: 50px;
+}
+
+.image {
+    width: 23vw;
+}
+
+body {
+    background-image: url("../images/background.jpg");
+    min-width: 400px;
+}
+
+.banner {
+    background-image: url("../images/algo.jpg");
+    height: 45vh;
+    width: 100vw;
+    margin-top: -20px;
+    position: fixed;
+    z-index: -1;
+}
