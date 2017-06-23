@@ -21,14 +21,21 @@ app.controller("MyResultsController", function($scope, $http, RootFactory, apiUr
     } else if (data.algorithm == "Support Vector Classification") {
         for (let key in data.accuracy) {
             let display = [];
-            display.push(key+1);
+            display.push(key);
             display.push(data.accuracy[key]);
             $scope.display.push(display);
         }
     }
 
     for (let pred in data.results) {
-        $scope.prediction.push(data.results[pred]);
+        if (data.algorithm == "Nearest Neighbor") {
+            $scope.prediction.push(data.results[pred]);
+        } else if (data.algorithm == "Support Vector Classification") {
+            let new_list = [];
+            new_list.push(data.results[pred]);
+            new_list.push(data.prob[pred]);
+            $scope.prediction.push(new_list);
+        }
     }
 
     $scope.back = function() {

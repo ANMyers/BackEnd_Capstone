@@ -94,6 +94,8 @@ app.controller("MyProjectController", function($scope, $http, RootFactory, apiUr
       },
       err => {
         console.log("Error: ", err);
+        $scope.error = true;
+        $scope.error_message = "Something Went Wrong... Please Try Again Later";
       });
   };
 

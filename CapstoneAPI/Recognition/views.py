@@ -96,10 +96,11 @@ def SVC(request):
     preproc_train_y = preprocess_svc_data(train_on_y)
     preproc_train_against = preprocess_svc_data(train_against)
 
-    supveccla = Support_Vector_Classification()
+    supveccla = Support_Vector_Classification(probability=True)
 
     try:
         supveccla.fit(preproc_train_on['processed'], preproc_train_y['processed'].ravel())
+        # model_score = supveccla.score(preproc_train_on['processed'], preproc_train_y['processed'].ravel())
     except ValueError:
         labels = np.unique(preproc_train_y['processed'])
         print("\nlabels?: {}\n".format(labels))
@@ -108,15 +109,21 @@ def SVC(request):
 
     cluster_amount = len(supveccla.n_support_)
     pred = supveccla.predict(preproc_train_against['processed'])
+    pred_proba = supveccla.predict_proba(preproc_train_against['processed'])
+    pred_proba = label_probablity(pred_proba)
+
     sep_clusters = seperate_clusters(supveccla.support_, cluster_amount)
     percent = calculate_percent(sep_clusters)
 
     rename_y(pred, preproc_train_y['index_labels'])
     percent = rename_percent(percent, preproc_train_y['index_labels'])
 
-    data = json.dumps({"results": list(pred), "project": req_body['project'], "accuracy": percent,"cluster_amount": int(cluster_amount),  "project": req_body['project'], "algorithm": req_body['algorithm']})
+    data = json.dumps({"results": list(pred), "project": req_body['project'], "accuracy": percent,"cluster_amount": int(cluster_amount), "prob":pred_proba,  "project": req_body['project'], "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
 
+def label_probablity(probability):
+    probability = [[int(i*100) for i in list(nested)] for nested in probability]
+    return probability
 
 def rename_percent(accuracy, index_labels):
     new_dict = dict()
