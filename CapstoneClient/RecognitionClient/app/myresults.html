@@ -7,18 +7,23 @@
           <table class="table table-striped" style="width:100%">
             <th ng-if="SelectedAlgo != 'Support Vector Classification' ">Details</th>
             <th ng-if="SelectedAlgo == 'Support Vector Classification' ">Cluster Index</th>
+
             <th ng-if="SelectedAlgo != 'Support Vector Classification' ">Total / Percentage</th>
             <th ng-if="SelectedAlgo == 'Support Vector Classification' ">Percentage From Total</th>
+
             <tr ng-if="SelectedAlgo != 'Support Vector Classification' " ng-repeat="each in display">
               <td ng-if="each[0] == 'total'"><strong>Cluster ((each[2])) Total: <br></strong></td>
               <td ng-if="each[0] != 'total'">True ((each[0]))'s Percent:</td>
+
               <td ng-if="each[0] == 'total'"><strong>((each[1]))</strong></td>
               <td ng-if="each[0] != 'total'">((each[1]))%</td>
             </tr>
-            <tr ng-if="SelectedAlgo = 'Support Vector Classification' " ng-repeat="each in display">
+
+            <tr ng-if="SelectedAlgo == 'Support Vector Classification' " ng-repeat="each in display">
               <td>((each[0]))'s Percent:</td>
               <td>((each[1]))%</td>
             </tr>
+
           </table><br>
         </div>
       </div>
@@ -29,9 +34,12 @@
           <table class="table table-striped" style="width:100%">
             <th>Index</th>
             <th>Predicted In</th>
+            <th ng-if="SelectedAlgo == 'Support Vector Classification' ">Accuracy Per Cluster</th>
             <tr ng-repeat="pred in prediction track by $index">
-              <td><strong>(($index))<br></strong></td>
-              <td>((pred))<br></td>
+              <td><strong>(($index + 1))<br></strong></td>
+              <td ng-if="SelectedAlgo == 'Support Vector Classification' ">((pred[0]))<br></td>
+              <td ng-if="SelectedAlgo != 'Support Vector Classification' ">((pred))<br></td>
+              <td ng-if="SelectedAlgo == 'Support Vector Classification' ">((pred[1]))<br></td>
             </tr>
           </table><br>
         </div>
