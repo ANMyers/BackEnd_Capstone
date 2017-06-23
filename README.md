@@ -54,10 +54,14 @@ pip install sklearn
 
 #### Setting up the database:
 from CapstoneAPI/ directory:
-```python manage.py builddb ```
+```
+python manage.py builddb
+```
 
 Run the server:
-```python manage.py runserver```
+```
+python manage.py runserver
+```
 
 Now you have the backend built and running. Time for the frontend.
 
@@ -65,13 +69,19 @@ Now you have the backend built and running. Time for the frontend.
 From CapstoneClient/ directory
 
 go ahead and npm install those packages
-```npm install```
+```
+npm install
+```
 
 Then you'll need to have the httpserver available to run:
-```npm install http-server -g```
+```
+npm install http-server -g
+```
 
 from there you can go ahead and run your httpserver
-```http-server```
+```
+http-server
+```
 
 route to http://localhost:8080/ and you should be set. Enjoy :)
 
