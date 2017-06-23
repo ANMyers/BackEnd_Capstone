@@ -30,62 +30,52 @@ registering. If you want information about the implemented algorithms or what fo
 
    Now you get your results! Happy Tinkering!
 
+## Built With
+
+* [Python](http://www.dropwizard.io/1.0.2/docs/) - Main Backend Language
+* [Javascript](https://www.javascript.com/) - Main Frontend Language
+* [Django](http://www.dropwizard.io/1.0.2/docs/) - Backend Framework
+* [AngularJs](https://angularjs.org/) - Frontend Framework
+* [pip](https://maven.apache.org/) - Dependency Management
+* [grunt](https://gruntjs.com/) - Javascript Task Runner
+* [npm](https://www.npmjs.com/) - Package Manager
 
 # Installing BackEnd
    If you so fancy to download or clone this site here is what you will need 
 to make sure you have installed for the backend:
 
 ### Prerequisites
-
-Install [pip](https://packaging.python.org/installing/)
-
-Install [Python 3.6](https://www.python.org/downloads/)
-
-From your terminal you can now use the following commands:
-```
-pip install django
-```
+As long as you have everything installed that Recognition was built with (see above) and you've clone down this repo cd into it then from your terminal you can now use the following commands:
 ```
 pip install scipy
-```
-```
 pip install numpy
-```
-```
 pip install sklearn
 ```
 
-Setting up the database:
-```
-python manage.py builddb 
-```
+#### Setting up the database:
+from CapstoneAPI/ directory:
+```python manage.py builddb ```
 
 Run the server:
-```
-python manage.py runserver
-```
+```python manage.py runserver```
 
 Now you have the backend built and running. Time for the frontend.
 
 # Installing FrontEnd
 From CapstoneClient/ directory
-```
-cd CapstoneClient
-```
+
 go ahead and npm install those packages
 ```npm install```
 
+Then you'll need to have the httpserver available to run:
+```npm install http-server -g```
+
 from there you can go ahead and run your httpserver
-```
-http-server
-```
+```http-server```
 
 route to http://localhost:8080/ and you should be set. Enjoy :)
 
 
-## Built With
 
-* [Python](http://www.dropwizard.io/1.0.2/docs/) - Main Backend Language
-* [Django](http://www.dropwizard.io/1.0.2/docs/) - The Backend Framework Used
-* [pip](https://maven.apache.org/) - Dependency Management
-* [grunt](https://gruntjs.com/) - Javascript Task Runner
+
+
