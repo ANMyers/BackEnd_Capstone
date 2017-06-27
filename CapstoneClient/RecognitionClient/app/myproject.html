@@ -10,7 +10,7 @@
           <tr ng-repeat="sample in sample_set track by $index">
             <td>((sample))</td>
             <td><a href="" class="glyphicon glyphicon-remove" ng-click="variables_to_exclude( ((sample)) )"></a></td>
-            <td ng-if="index_needed"><button class="glyphicon glyphicon-zoom-in" ng-click="variables_to_rename( ((sample)) )"></button></td>
+            <td ng-if="index_needed"><a href="" class="glyphicon glyphicon-zoom-in" ng-click="variables_to_rename( ((sample)) )"></a></td>
           </tr>
         </table><br>
       </div>
