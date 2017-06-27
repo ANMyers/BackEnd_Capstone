@@ -7,8 +7,9 @@ import json
 
 from Recognition.models import *
 
-from sklearn.cluster import KMeans
 from sklearn.svm import SVC as Support_Vector_Classification
+from sklearn.externals import joblib
+from sklearn.cluster import KMeans
 from sklearn import preprocessing
 
 import numpy as np
@@ -84,29 +85,33 @@ def SVC(request):
 
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm, predict_index=req_body['predict_index'])
 
+    # label start for train, and stop for predicting
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
 
+    # seperating training data by X and Y for algorithm
     train_on = results['results'][:start]
     train_on_y = results['y_list'][:start]
 
     train_against = results['results'][-stop:]
 
+    # preprocess any words in each index
     preproc_train_on = preprocess_svc_data(train_on)
     preproc_train_y = preprocess_svc_data(train_on_y)
     preproc_train_against = preprocess_svc_data(train_against)
 
     supveccla = Support_Vector_Classification(probability=True)
 
+    # try block for fiting X and Y, if value error (meaning there is only one predicted outcome) to send message back to display for user to train on more data.
     try:
         supveccla.fit(preproc_train_on['processed'], preproc_train_y['processed'].ravel())
-        # model_score = supveccla.score(preproc_train_on['processed'], preproc_train_y['processed'].ravel())
+
     except ValueError:
         labels = np.unique(preproc_train_y['processed'])
-        print("\nlabels?: {}\n".format(labels))
         data = json.dumps({"error": True, "error_message": "The dataset you sent only has 1 predicted outcome. Please send more data to get a better result."})
         return HttpResponse(data, content_type='application/json')
 
+    # label cluster amount and predicting data
     cluster_amount = len(supveccla.n_support_)
     pred = supveccla.predict(preproc_train_against['processed'])
     pred_proba = supveccla.predict_proba(preproc_train_against['processed'])
@@ -115,9 +120,11 @@ def SVC(request):
     sep_clusters = seperate_clusters(supveccla.support_, cluster_amount)
     percent = calculate_percent(sep_clusters)
 
+    # relabel y's with appropriate most dominate value
     rename_y(pred, preproc_train_y['index_labels'])
     percent = rename_percent(percent, preproc_train_y['index_labels'])
 
+    # return data to be displayed to user in http response
     data = json.dumps({"results": list(pred), "project": req_body['project'], "accuracy": percent,"cluster_amount": int(cluster_amount), "prob":pred_proba,  "project": req_body['project'], "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
 
@@ -230,9 +237,14 @@ def kmeans(request):
     # grab dataset from user's project
     column_name = 'dataset'
     datasets = list(ProjectDataset.objects.filter(user=user, project=project).values(column_name))
+
+    # seperate indexs of each that the user wants ignored
     list_of_indexs = [each['index'] for each in req_body['ignored']]
+
+    # reform dataset from query for algorithm to process
     results = reformat_from_query(dataset=datasets, indexs_to_remove=list_of_indexs, column_name=column_name, algorithm=project.algorithm)
 
+    # label initial start and stop to train and predict on
     start = int(req_body['train_on'])
     stop = int(req_body['train_against'])
     cluster_quantity = len(results['removed'])*3
@@ -240,17 +252,27 @@ def kmeans(request):
     train_on = results['results'][:start]
     train_against = results['results'][-stop:]
 
+    # run KMeans .fit for training dataset
     kmeans = KMeans(n_clusters=cluster_quantity, precompute_distances=False, random_state=1, max_iter=1000).fit(train_on)
 
+    # run KMeans .predict for prediction set
     pred = kmeans.predict(train_against)
     prediction = list(int(each) for each in pred)
+
+    # label index of each cluster
     cluster_indexs = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
 
+    # label the centroids by most prevalent value
     labels = label_centroids(clusters_indexs=cluster_indexs, original=datasets, possible_variables=results['removed'])
+
+    # relabel the centroids by user labeled values
     user_labels = user_labeled_centroids(labels['centroids'], req_body['renamed'])
+
+    # relabel prediction and accuracy by user labels
     prediction = relabel_prediction(prediction, user_labels)
     relabeled_accuracy = relabel_accuracy(labels['accuracy'], req_body['renamed'])
 
+    # return results in http response
     data = json.dumps({"results":prediction, "accuracy": relabeled_accuracy, "centroids": user_labels, "project": req_body['project'], "cluster_amount": cluster_quantity, "algorithm": req_body['algorithm']})
     return HttpResponse(data, content_type='application/json')
 
